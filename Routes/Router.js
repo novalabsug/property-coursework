@@ -2,6 +2,7 @@ import { Router } from "express";
 import {
   createPropertyPost,
   fetchPropertiesGet,
+  fetchPropertyPost,
   registerPost,
   signinPost,
 } from "../controller/Controller.js";
@@ -24,6 +25,7 @@ const upload = multer({ storage: storage });
 router.post("/register", registerPost);
 router.post("/signin", signinPost);
 router.post("/property/new", upload.array("photos", 10), createPropertyPost);
-router.get("/properties", fetchPropertiesGet);
+router.get("/properties/:id", fetchPropertiesGet);
+router.post("/property", fetchPropertyPost);
 
 export default router;

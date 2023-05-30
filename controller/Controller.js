@@ -108,6 +108,7 @@ export const createPropertyPost = TryCatch(async (req, res) => {
     bathrooms,
     map,
     cost,
+    userId,
   } = req.body;
 
   if (!propertyName || propertyName == "")
@@ -124,7 +125,7 @@ export const createPropertyPost = TryCatch(async (req, res) => {
   if (!cost || cost == "") throw Error("Property price is required");
 
   conn.query(
-    `INSERT INTO property (propertyName, propertyType, propertyLocation, propertyDescription, bedrooms, bathrooms, map, price) VALUES ('${propertyName}', '${propertyType}', '${propertyLocation}', '${propertyDescription}', '${bedrooms}', '${bathrooms}', '${map}', '${cost}')`,
+    `INSERT INTO property (propertyName, propertyType, propertyLocation, propertyDescription, bedrooms, bathrooms, map, price, userId) VALUES ('${propertyName}', '${propertyType}', '${propertyLocation}', '${propertyDescription}', '${bedrooms}', '${bathrooms}', '${map}', '${cost}', '${userId}')`,
     (err, results, fields) => {
       if (err) {
         return res
@@ -164,32 +165,85 @@ export const createPropertyPost = TryCatch(async (req, res) => {
       }
     }
   );
-
-  console.log(req.body);
 });
 
 export const fetchPropertiesGet = TryCatch(async (req, res) => {
-  conn.query("SELECT * FROM property", (err, results, fields) => {
-    let Properties = results;
+  const ID = req.params.id ? req.params.id : null;
 
-    if (err) {
-      return res.status(400).json({ status: "Error", Error: "Error occured" });
-    }
+  if (ID === null)
+    return res.status(400).json({ status: "Error", Error: "Error occured" });
 
-    if (Properties) {
-      if (Properties.length <= 0)
-        return res.status(200).json({ status: "Success", Properties });
+  conn.query(
+    `SELECT * FROM property WHERE userId = ${ID}`,
+    (err, results, fields) => {
+      let Properties = results;
 
-      for (let property of Properties) {
-        conn.query(
-          `SELECT image FROM propertyimages WHERE propertyID = '${property.propertyID}'`,
-          (err, results, fields) => {
-            console.log(results);
-            property.image = results[0].image;
-            res.status(200).json({ status: "Success", Properties });
-          }
-        );
+      if (err) {
+        return res
+          .status(400)
+          .json({ status: "Error", Error: "Error occured" });
+      }
+
+      if (Properties) {
+        if (Properties.length <= 0)
+          return res.status(200).json({ status: "Success", Properties });
+
+        for (let property of Properties) {
+          conn.query(
+            `SELECT image FROM propertyimages WHERE propertyID = '${property.propertyID}'`,
+            (err, results, fields) => {
+              property.image = results[0].image;
+              res.status(200).json({ status: "Success", Properties });
+            }
+          );
+        }
       }
     }
-  });
+  );
+});
+
+export const fetchPropertyPost = TryCatch(async (req, res) => {
+  const { propertyID, userId } = req.body;
+
+  if (propertyID == "" || propertyID == null)
+    return res.status(400).json({ status: "Error", Error: "Error occured" });
+
+  if (userId == "" || userId == null)
+    return res.status(400).json({ status: "Error", Error: "Error occured" });
+
+  conn.query(
+    `SELECT * FROM property WHERE propertyID = ${propertyID} AND userId = ${userId}`,
+    (err, results, fields) => {
+      if (err) {
+        return res
+          .status(400)
+          .json({ status: "Error", Error: "Error occured" });
+      }
+
+      if (results) {
+        if (results.length > 0) {
+          const Property = results;
+          conn.query(
+            `SELECT image FROM propertyimages WHERE propertyID=${Property[0].propertyID}`,
+            (err, images, fields) => {
+              if (err) {
+                return res
+                  .status(400)
+                  .json({ status: "Error", Error: "Error occured" });
+              }
+
+              if (images)
+                res.status(200).json({
+                  status: "Success",
+                  Property,
+                  PropertyImages: images,
+                });
+            }
+          );
+        } else {
+          res.status(200).json({ status: "Success", Property: results });
+        }
+      }
+    }
+  );
 });

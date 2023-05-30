@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Properties</title>
+
+    <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="css/main.css" />
+
+    <link rel="stylesheet" href="assets/fontawesome/css/brands.css" />
+    <link rel="stylesheet" href="assets/fontawesome/css/solid.css" />
+    <link rel="stylesheet" href="assets/fontawesome/css/fontawesome.css" />
+  </head>
+  <body>
+    <!-- ---------------- nav bar --------------------- -->
+    <nav class="navbar px-3 py-3 justify-content-between">
+      <div class="p-2">
+        <a href="/" class="text-decoration-none">
+          <div class="d-flex">
+            <i class="fa fa-home fs-4 primary-color mx-1"></i>
+            <h3 class="fs-4 text-uppercase dark-color d-flex">property</h3>
+            <h3 class="fs-4 text-uppercase primary-color">agency</h3>
+          </div>
+        </a>
+      </div>
+      <div class="p-2 px-3" id="login-container"></div>
+    </nav>
+
+    <!-- <div class="p-3 py-3" id="property-container-nav"></div> -->
+
+    <div class="p-3 py-3 container" id="property-container"></div>
+
+    <!-- Modal -->
+    <div
+      class="modal fade"
+      id="updatePropertyForm"
+      aria-hidden="true"
+      aria-labelledby="updatePropertyFormLabel"
+      tabindex="-1"
+    >
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" id="updatePropertyFormLabel">
+              Update property details
+            </h1>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <form id="add-new-property">
+              <div class="py-1 px-3">
+                <div class="row g-2 mb-3 align-items-center">
+                  <div class="col-6">
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="propertyName"
+                      aria-describedby="propertyName"
+                      placeholder="Property Name"
+                      name="propertyName"
+                    />
+                  </div>
+                  <div class="col-6">
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="propertyType"
+                      aria-describedby="propertyType"
+                      placeholder="Property Type"
+                      name="propertyType"
+                    />
+                  </div>
+                </div>
+                <div class="row g-2 mb-3 align-items-center">
+                  <div class="col-6">
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="propertyLocation"
+                      aria-describedby="propertyLocation"
+                      placeholder="Property Location"
+                      name="propertyLocation"
+                    />
+                  </div>
+                  <div class="col-6">
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="map"
+                      aria-describedby="map"
+                      placeholder="Property map link"
+                      name="map"
+                    />
+                  </div>
+                </div>
+                <div class="row g-2 mb-3 align-items-center">
+                  <div class="col-6">
+                    <input
+                      type="number"
+                      class="form-control"
+                      id="bedrooms"
+                      aria-describedby="bedrooms"
+                      placeholder="Bedrooms"
+                      name="bedrooms"
+                      min="1"
+                    />
+                  </div>
+                  <div class="col-6">
+                    <input
+                      type="number"
+                      class="form-control"
+                      id="bathrooms"
+                      aria-describedby="bathrooms"
+                      placeholder="Bathrooms"
+                      name="bathrooms"
+                      min="1"
+                    />
+                  </div>
+                </div>
+                <div class="row g-2 mb-3 align-items-center">
+                  <div class="col-6">
+                    <input
+                      type="number"
+                      class="form-control"
+                      id="cost"
+                      aria-describedby="cost"
+                      placeholder="Property Price"
+                      name="cost"
+                    />
+                  </div>
+                </div>
+                <div class="mb-3">
+                  <!-- <input
+                    type="text"
+                    class="form-control"
+                    id="propertyDescription"
+                    aria-describedby="propertyDescription"
+                    placeholder="Property Description"
+                    name="propertyDescription"
+                  /> -->
+                  <textarea
+                    class="form-control"
+                    id="propertyDescription"
+                    aria-describedby="propertyDescription"
+                    placeholder="Property Description"
+                    name="propertyDescription"
+                    rows="3"
+                  ></textarea>
+                </div>
+                <div class="mb-3">
+                  <label for="photos" class="form-label">Property images</label>
+                  <input
+                    type="file"
+                    class="form-control"
+                    accept="image/*"
+                    multiple
+                    name="photos"
+                    id="photos"
+                  />
+                </div>
+              </div>
+              <div class="py-3">
+                <button type="submit" class="btn btn-primary">
+                  Save Changes
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="bg-dark">
+      <div class="py-2 pt-4">
+        <p class="text-center text-light fs-6">
+          Copyright &copy; 2023. MyProperty
+        </p>
+      </div>
+    </footer>
+
+    <script src="assets/jquery/jquery-3.7.0.js"></script>
+    <script src="assets/bootstrap/js/bootstrap.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/property.js"></script>
+  </body>
+</html>

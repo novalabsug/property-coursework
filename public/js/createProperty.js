@@ -78,11 +78,16 @@ function displayPreviewData(data) {
 
 $("#confirm-preview-form").click(async () => {
   const form = $("#add-new-property");
+  const NewFormData = new FormData(form[0]);
+  NewFormData.append(
+    "userId",
+    LoggedInUser?.userId ? LoggedInUser?.userId : null
+  );
 
   try {
     const res = await fetch("/property/new", {
       method: "POST",
-      body: new FormData(form[0]),
+      body: NewFormData,
     });
 
     const data = await res.json();
