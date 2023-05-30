@@ -1,0 +1,18 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-size: 1.1rem;
+}
+
+.dark-color {
+  color: #000;
+}
+
+.primary-color {
+  color: #5e9e4d;
+}
+
+.secondary-color {
+  color: #ca1b47;
+}

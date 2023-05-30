@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Properties</title>
+
+    <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="css/main.css" />
+
+    <link rel="stylesheet" href="assets/fontawesome/css/brands.css" />
+    <link rel="stylesheet" href="assets/fontawesome/css/solid.css" />
+    <link rel="stylesheet" href="assets/fontawesome/css/fontawesome.css" />
+  </head>
+  <body>
+    <!-- ---------------- nav bar --------------------- -->
+    <nav class="navbar px-3 py-3 justify-content-between">
+      <div class="p-2">
+        <a href="/" class="text-decoration-none">
+          <div class="d-flex">
+            <i class="fa fa-home fs-4 primary-color mx-1"></i>
+            <h3 class="fs-4 text-uppercase dark-color d-flex">property</h3>
+            <h3 class="fs-4 text-uppercase primary-color">agency</h3>
+          </div>
+        </a>
+      </div>
+      <div class="p-2 px-3" id="login-container"></div>
+    </nav>
+    <div class="p-3 py-3" id="create-property-container"></div>
+    <div class="p-2 py-2 container" id="properties-container">
+      <div class="row row-cols-1 row-cols-md-3 g-4" id="properties-wrapper">
+        <!-- <div class="col">
+          <a href="property.html" class="card text-decoration-none">
+            <img src="images/img.jpg" class="card-img-top" alt="" />
+            <div class="card-body">
+              <h5 class="card-title text-decoration-none primary-color">
+                3 Bedroom apartment
+              </h5>
+              <p class="card-text text-decoration-none dark-color">
+                This is a longer card with supporting text below as a natural
+                lead-in to additional content. This content is a little bit
+                longer.
+              </p>
+            </div>
+          </a>
+        </div> -->
+      </div>
+    </div>
+
+    <!-- Modal -->
+    <div
+      class="modal fade"
+      id="createPropertyForm"
+      aria-hidden="true"
+      aria-labelledby="createPropertyFormLabel"
+      tabindex="-1"
+    >
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" id="createPropertyFormLabel">
+              Create new property
+            </h1>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <form id="add-new-property">
+              <div class="py-1 px-3">
+                <div class="row g-2 mb-3 align-items-center">
+                  <div class="col-6">
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="propertyName"
+                      aria-describedby="propertyName"
+                      placeholder="Property Name"
+                      name="propertyName"
+                    />
+                  </div>
+                  <div class="col-6">
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="propertyType"
+                      aria-describedby="propertyType"
+                      placeholder="Property Type"
+                      name="propertyType"
+                    />
+                  </div>
+                </div>
+                <div class="row g-2 mb-3 align-items-center">
+                  <div class="col-6">
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="propertyLocation"
+                      aria-describedby="propertyLocation"
+                      placeholder="Property Location"
+                      name="propertyLocation"
+                    />
+                  </div>
+                  <div class="col-6">
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="propertyDescription"
+                      aria-describedby="propertyDescription"
+                      placeholder="Property Description"
+                      name="propertyDescription"
+                    />
+                  </div>
+                </div>
+                <div class="row g-2 mb-3 align-items-center">
+                  <div class="col-6">
+                    <input
+                      type="number"
+                      class="form-control"
+                      id="bedrooms"
+                      aria-describedby="bedrooms"
+                      placeholder="Bedrooms"
+                      name="bedrooms"
+                      min="1"
+                    />
+                  </div>
+                  <div class="col-6">
+                    <input
+                      type="number"
+                      class="form-control"
+                      id="bathrooms"
+                      aria-describedby="bathrooms"
+                      placeholder="Bathrooms"
+                      name="bathrooms"
+                      min="1"
+                    />
+                  </div>
+                </div>
+                <div class="row g-2 mb-3 align-items-center">
+                  <div class="col-6">
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="map"
+                      aria-describedby="map"
+                      placeholder="Property map link"
+                      name="map"
+                    />
+                  </div>
+                  <div class="col-6">
+                    <input
+                      type="number"
+                      class="form-control"
+                      id="cost"
+                      aria-describedby="cost"
+                      placeholder="Property Price"
+                      name="cost"
+                    />
+                  </div>
+                </div>
+                <div class="mb-3">
+                  <label for="photos" class="form-label">Property images</label>
+                  <input
+                    type="file"
+                    class="form-control"
+                    accept="image/*"
+                    multiple
+                    name="photos"
+                    id="photos"
+                  />
+                </div>
+              </div>
+              <div class="py-3">
+                <button
+                  class="btn btn-primary"
+                  data-bs-target="#previewProperty"
+                  data-bs-toggle="modal"
+                >
+                  Save Changes
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal -->
+    <div
+      class="modal fade"
+      id="previewProperty"
+      aria-hidden="true"
+      aria-labelledby="previewPropertyLabel"
+      tabindex="-1"
+    >
+      <div class="modal-dialog modal-lg bg-light rounded-3">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" id="exampleModalToggleLabel2">
+              Preview property details
+            </h1>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body" id="preview-property-body"></div>
+          <div class="modal-footer">
+            <button
+              class="btn btn-danger"
+              data-bs-target="#createPropertyForm"
+              data-bs-toggle="modal"
+            >
+              back
+            </button>
+            <button class="btn btn-success" id="confirm-preview-form">
+              Add property
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script src="assets/jquery/jquery-3.7.0.js"></script>
+    <script src="assets/bootstrap/js/bootstrap.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/index.js"></script>
+    <script src="js/createProperty.js"></script>
+  </body>
+</html>

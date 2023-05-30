@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>signin</title>
+    <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="css/main.css" />
+  </head>
+  <body>
+    <!-- ---------------- nav bar --------------------- -->
+    <nav class="navbar px-3 py-3 justify-content-between">
+      <div class="p-2">
+        <a href="/" class="text-decoration-none">
+          <div class="d-flex">
+            <h3 class="fs-4 text-uppercase dark-color d-flex">property</h3>
+            <h3 class="fs-4 text-uppercase primary-color">agency</h3>
+          </div>
+        </a>
+      </div>
+      <div class="p-2 px-3">
+        <button class="p-1 px-3 btn bg-body border-dark">Sign In</button>
+      </div>
+    </nav>
+
+    <!-- signin form -->
+    <div class="p-3 py-4">
+      <h3 class="fs-3 text-center">Create new account</h3>
+      <div class="p-2 py-2 d-flex">
+        <div class="m-auto w-50">
+          <div class="">
+            <div class="py-3">
+              <form id="register-form">
+                <div class="mb-3" id="register-form-msg">
+                  <!-- <h4 class="text-center fs-5 text-success">
+                    An error occured
+                  </h4> -->
+                </div>
+                <div class="row g-2 mb-3 align-items-center">
+                  <div class="col-6">
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="name"
+                      aria-describedby="name"
+                      placeholder="Full name"
+                      name="fullname"
+                      required
+                    />
+                  </div>
+                  <div class="col-6">
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="username"
+                      aria-describedby="username"
+                      placeholder="Username"
+                      name="username"
+                      required
+                    />
+                  </div>
+                </div>
+                <div class="mb-3">
+                  <input
+                    type="email"
+                    class="form-control"
+                    id="email"
+                    aria-describedby="email"
+                    placeholder="email"
+                    name="email"
+                    required
+                  />
+                </div>
+                <div class="mb-3">
+                  <select
+                    class="form-select"
+                    id="inputGroupSelect04"
+                    aria-label=""
+                    name="accountType"
+                    required
+                  >
+                    <option selected>Register As</option>
+                    <option value="landlord">Landlord</option>
+                    <option value="tenant">Tenant</option>
+                  </select>
+                </div>
+                <div class="mb-3">
+                  <!-- <label for="exampleInputPassword1" class="form-label"
+                    >Password</label
+                  > -->
+                  <input
+                    type="password"
+                    class="form-control"
+                    id="password"
+                    placeholder="Enter password"
+                    name="password"
+                    required
+                  />
+                </div>
+                <div class="form-text py-1">
+                  Or
+                  <a
+                    class="text-decoration-none text-primary"
+                    href="signin.html"
+                    >Sign In</a
+                  >
+                </div>
+                <button type="submit" class="btn btn-success">Register</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script src="assets/jquery/jquery-3.7.0.js"></script>
+    <script src="assets/bootstrap/js/bootstrap.js"></script>
+    <script src="js/register.js"></script>
+  </body>
+</html>
