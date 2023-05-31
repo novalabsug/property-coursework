@@ -167,6 +167,34 @@ export const createPropertyPost = TryCatch(async (req, res) => {
   );
 });
 
+export const fetchAllPropertiesGet = TryCatch(async (req, res) => {
+  console.log("I am here");
+  conn.query("SELECT * FROM property", (err, results, fields) => {
+    let Properties = results;
+
+    if (err) {
+      console.log(err);
+      return res.status(400).json({ status: "Error", Error: "Error occured" });
+    }
+
+    if (Properties) {
+      if (Properties.length <= 0)
+        return res.status(200).json({ status: "Success", Properties });
+
+      for (let property of Properties) {
+        conn.query(
+          `SELECT image FROM propertyimages WHERE propertyID = '${property.propertyID}'`,
+          (err, results, fields) => {
+            console.log(Properties);
+            property.image = results[0].image;
+            res.status(200).json({ status: "Success", Properties });
+          }
+        );
+      }
+    }
+  });
+});
+
 export const fetchPropertiesGet = TryCatch(async (req, res) => {
   const ID = req.params.id ? req.params.id : null;
 
@@ -203,6 +231,274 @@ export const fetchPropertiesGet = TryCatch(async (req, res) => {
 });
 
 export const fetchPropertyPost = TryCatch(async (req, res) => {
+  const { propertyID, userId, accountType } = req.body;
+
+  if (propertyID == "" || propertyID == null)
+    return res.status(400).json({ status: "Error", Error: "Error occured" });
+
+  if (userId == "" || userId == null) {
+    conn.query(
+      `SELECT * FROM property WHERE propertyID = ${propertyID}`,
+      (err, results, fields) => {
+        if (err) {
+          console.log(err);
+          return res
+            .status(400)
+            .json({ status: "Error", Error: "Error occured" });
+        }
+
+        if (results) {
+          if (results.length > 0) {
+            const Property = results;
+            conn.query(
+              `SELECT image FROM propertyimages WHERE propertyID=${Property[0].propertyID}`,
+              (err, images, fields) => {
+                if (err) {
+                  console.log(err);
+                  return res
+                    .status(400)
+                    .json({ status: "Error", Error: "Error occured" });
+                }
+
+                if (images) {
+                  conn.query(
+                    `SELECT likedProperty.likes, users.username FROM likedProperty INNER JOIN users ON likedProperty.userId = users.userId WHERE likedProperty.propertyID = '${Property[0].propertyID}'`,
+                    (err, Likes, fields) => {
+                      if (err) {
+                        console.log(err);
+                        return res
+                          .status(400)
+                          .json({ status: "Error", Error: "Error occured" });
+                      }
+
+                      if (Likes) {
+                        conn.query(
+                          `SELECT dislikedProperty.dislikes, users.username FROM dislikedProperty INNER JOIN users ON dislikedProperty.userId = users.userId WHERE dislikedProperty.propertyID = '${Property[0].propertyID}'`,
+                          (err, Dislikes, fields) => {
+                            if (err) {
+                              console.log(err);
+                              return res.status(400).json({
+                                status: "Error",
+                                Error: "Error occured",
+                              });
+                            }
+
+                            if (Dislikes) {
+                              conn.query(
+                                `SELECT comment.comment, users.username FROM comment INNER JOIN users ON comment.userId = users.userId WHERE comment.propertyID = '${Property[0].propertyID}'`,
+                                (err, Comments, fields) => {
+                                  if (err) {
+                                    console.log(err);
+                                    return res.status(400).json({
+                                      status: "Error",
+                                      Error: "Error occured",
+                                    });
+                                  }
+
+                                  if (Comments) {
+                                    res.status(200).json({
+                                      status: "Success",
+                                      Property,
+                                      PropertyImages: images,
+                                      Likes,
+                                      Dislikes,
+                                      Comments,
+                                    });
+                                  }
+                                }
+                              );
+                            }
+                          }
+                        );
+                      }
+                    }
+                  );
+                }
+              }
+            );
+          } else {
+            res.status(200).json({ status: "Success", Property: results });
+          }
+        }
+      }
+    );
+
+    return;
+  }
+
+  accountType == "landlord"
+    ? conn.query(
+        `SELECT * FROM property WHERE propertyID = ${propertyID} AND userId = ${userId}`,
+        (err, Property, fields) => {
+          if (err) {
+            console.log(err);
+            return res
+              .status(400)
+              .json({ status: "Error", Error: "Error occured" });
+          }
+
+          if (Property) {
+            if (Property.length > 0) {
+              conn.query(
+                `SELECT image FROM propertyimages WHERE propertyID=${Property[0].propertyID}`,
+                (err, images, fields) => {
+                  if (err) {
+                    console.log(err);
+                    return res
+                      .status(400)
+                      .json({ status: "Error", Error: "Error occured" });
+                  }
+
+                  if (images) {
+                    conn.query(
+                      `SELECT likedProperty.likes, users.username FROM likedProperty INNER JOIN users ON likedProperty.userId = users.userId WHERE likedProperty.propertyID = '${Property[0].propertyID}'`,
+                      (err, Likes, fields) => {
+                        if (err) {
+                          console.log(err);
+                          return res
+                            .status(400)
+                            .json({ status: "Error", Error: "Error occured" });
+                        }
+
+                        if (Likes) {
+                          conn.query(
+                            `SELECT dislikedProperty.dislikes, users.username FROM dislikedProperty INNER JOIN users ON dislikedProperty.userId = users.userId WHERE dislikedProperty.propertyID = '${Property[0].propertyID}'`,
+                            (err, Dislikes, fields) => {
+                              if (err) {
+                                console.log(err);
+                                return res.status(400).json({
+                                  status: "Error",
+                                  Error: "Error occured",
+                                });
+                              }
+
+                              if (Dislikes) {
+                                conn.query(
+                                  `SELECT comment.comment, users.username FROM comment INNER JOIN users ON comment.userId = users.userId WHERE comment.propertyID = '${Property[0].propertyID}'`,
+                                  (err, Comments, fields) => {
+                                    if (err) {
+                                      console.log(err);
+                                      return res.status(400).json({
+                                        status: "Error",
+                                        Error: "Error occured",
+                                      });
+                                    }
+
+                                    if (Comments) {
+                                      res.status(200).json({
+                                        status: "Success",
+                                        Property,
+                                        PropertyImages: images,
+                                        Likes,
+                                        Dislikes,
+                                        Comments,
+                                      });
+                                    }
+                                  }
+                                );
+                              }
+                            }
+                          );
+                        }
+                      }
+                    );
+                  }
+                }
+              );
+            } else {
+              res.status(200).json({ status: "Success", Property });
+            }
+          }
+        }
+      )
+    : conn.query(
+        `SELECT * FROM property WHERE propertyID = ${propertyID}`,
+        (err, results, fields) => {
+          if (err) {
+            console.log(err);
+            return res
+              .status(400)
+              .json({ status: "Error", Error: "Error occured" });
+          }
+
+          if (results) {
+            if (results.length > 0) {
+              const Property = results;
+              conn.query(
+                `SELECT image FROM propertyimages WHERE propertyID=${Property[0].propertyID}`,
+                (err, images, fields) => {
+                  if (err) {
+                    console.log(err);
+                    return res
+                      .status(400)
+                      .json({ status: "Error", Error: "Error occured" });
+                  }
+
+                  if (images) {
+                    conn.query(
+                      `SELECT likedProperty.likes, users.username FROM likedProperty INNER JOIN users ON likedProperty.userId = users.userId WHERE likedProperty.propertyID = '${Property[0].propertyID}'`,
+                      (err, Likes, fields) => {
+                        if (err) {
+                          console.log(err);
+                          return res
+                            .status(400)
+                            .json({ status: "Error", Error: "Error occured" });
+                        }
+
+                        if (Likes) {
+                          conn.query(
+                            `SELECT dislikedProperty.dislikes, users.username FROM dislikedProperty INNER JOIN users ON dislikedProperty.userId = users.userId WHERE dislikedProperty.propertyID = '${Property[0].propertyID}'`,
+                            (err, Dislikes, fields) => {
+                              if (err) {
+                                console.log(err);
+                                return res.status(400).json({
+                                  status: "Error",
+                                  Error: "Error occured",
+                                });
+                              }
+
+                              if (Dislikes) {
+                                conn.query(
+                                  `SELECT comment.comment, users.username FROM comment INNER JOIN users ON comment.userId = users.userId WHERE comment.propertyID = '${Property[0].propertyID}'`,
+                                  (err, Comments, fields) => {
+                                    if (err) {
+                                      console.log(err);
+                                      return res.status(400).json({
+                                        status: "Error",
+                                        Error: "Error occured",
+                                      });
+                                    }
+
+                                    if (Comments) {
+                                      res.status(200).json({
+                                        status: "Success",
+                                        Property,
+                                        PropertyImages: images,
+                                        Likes,
+                                        Dislikes,
+                                        Comments,
+                                      });
+                                    }
+                                  }
+                                );
+                              }
+                            }
+                          );
+                        }
+                      }
+                    );
+                  }
+                }
+              );
+            } else {
+              res.status(200).json({ status: "Success", Property: results });
+            }
+          }
+        }
+      );
+});
+
+export const addPropertyForDeletePost = TryCatch(async (req, res) => {
   const { propertyID, userId } = req.body;
 
   if (propertyID == "" || propertyID == null)
@@ -212,9 +508,69 @@ export const fetchPropertyPost = TryCatch(async (req, res) => {
     return res.status(400).json({ status: "Error", Error: "Error occured" });
 
   conn.query(
-    `SELECT * FROM property WHERE propertyID = ${propertyID} AND userId = ${userId}`,
+    `SELECT * FROM propertyfordelete WHERE propertyID='${propertyID}' AND userId='${userId}'`,
     (err, results, fields) => {
       if (err) {
+        console.log(err);
+        return res
+          .status(400)
+          .json({ status: "Error", Error: "Error occured" });
+      }
+
+      if (results.length > 0)
+        return res.status(200).json({
+          status: "Success",
+          message: "Property all ready flagged for deletion",
+        });
+
+      conn.query(
+        `INSERT INTO propertyfordelete (propertyID, userId) VALUES ('${propertyID}', '${userId}')`,
+        (err, results, fields) => {
+          if (err) {
+            console.log(err);
+            return res
+              .status(400)
+              .json({ status: "Error", Error: "Error occured" });
+          }
+
+          if (results) {
+            res.status(200).json({
+              status: "Success",
+            });
+          }
+        }
+      );
+    }
+  );
+});
+
+export const addPropertyForUpdatePost = TryCatch(async (req, res) => {
+  const {
+    propertyName,
+    propertyLocation,
+    propertyDescription,
+    propertyType,
+    bedrooms,
+    bathrooms,
+    map,
+    cost,
+    userId,
+    propertyID,
+  } = req.body;
+
+  if (propertyID == "" || propertyID == null)
+    return res.status(400).json({ status: "Error", Error: "Error occured" });
+
+  if (userId == "" || userId == null)
+    return res.status(400).json({ status: "Error", Error: "Error occured" });
+
+  // check if the property has already been flagged to deletion
+
+  conn.query(
+    `SELECT * FROM propertyforupdate WHERE propertyID='${propertyID}'`,
+    (err, results, fields) => {
+      if (err) {
+        console.log(err);
         return res
           .status(400)
           .json({ status: "Error", Error: "Error occured" });
@@ -222,27 +578,263 @@ export const fetchPropertyPost = TryCatch(async (req, res) => {
 
       if (results) {
         if (results.length > 0) {
-          const Property = results;
           conn.query(
-            `SELECT image FROM propertyimages WHERE propertyID=${Property[0].propertyID}`,
-            (err, images, fields) => {
+            `UPDATE propertyforupdate SET propertyName='${propertyName}', propertyType='${propertyType}', propertyLocation='${propertyLocation}', propertyDescription='${propertyDescription}', bedrooms='${bedrooms}', bathrooms='${bathrooms}', map='${map}', price='${cost}', userId='${userId}' WHERE propertyID='${propertyID}'`,
+            (err, results, fields) => {
               if (err) {
+                console.log(err);
                 return res
                   .status(400)
                   .json({ status: "Error", Error: "Error occured" });
               }
 
-              if (images)
-                res.status(200).json({
-                  status: "Success",
-                  Property,
-                  PropertyImages: images,
-                });
+              if (results) {
+                conn.query(
+                  `SELECT * FROM propertyforupdate WHERE propertyID='${propertyID}' AND status='pending'`,
+                  (err, propertyForUpdate, fields) => {
+                    if (err) {
+                      console.log(err);
+                      return res
+                        .status(400)
+                        .json({ status: "Error", Error: "Error occured" });
+                    }
+                    if (propertyForUpdate.length > 0) {
+                      if (req.files?.length > 0) {
+                        for (const image of req.files) {
+                          conn.query(
+                            `DELETE * FROM propertyimagesforupdate WHERE propertyID='${
+                              propertyForUpdate[
+                                parseInt(propertyForUpdate?.length) - 1
+                              ].propertyID
+                            }' AND status='pending'`,
+                            (err, results, fields) => {
+                              conn.query(
+                                `INSERT INTO propertyimagesforupdate (image, propertyID) VALUES ('${
+                                  image.filename
+                                }', '${
+                                  propertyForUpdate[
+                                    parseInt(propertyForUpdate?.length) - 1
+                                  ].propertyID
+                                }')`,
+                                (err, results, fields) => {
+                                  if (err) {
+                                    console.log(err);
+                                  }
+                                }
+                              );
+                            }
+                          );
+                        }
+
+                        return res.status(200).json({ status: "Success" });
+                      }
+                      res.status(200).json({ status: "Success" });
+                    }
+                  }
+                );
+              }
             }
           );
         } else {
-          res.status(200).json({ status: "Success", Property: results });
+          conn.query(
+            `INSERT INTO propertyforupdate (propertyID, propertyName, propertyType, propertyLocation, propertyDescription, bedrooms, bathrooms, map, price, userId) VALUES ('${propertyID}','${propertyName}', '${propertyType}', '${propertyLocation}', '${propertyDescription}', '${bedrooms}', '${bathrooms}', '${map}', '${cost}', '${userId}')`,
+            (err, results, fields) => {
+              if (err) {
+                console.log(err);
+                return res
+                  .status(400)
+                  .json({ status: "Error", Error: "Error occured" });
+              }
+
+              if (results) {
+                conn.query(
+                  `SELECT * FROM propertyforupdate WHERE propertyID='${propertyID}' AND status='pending'`,
+                  (err, results, fields) => {
+                    if (err) {
+                      console.log(err);
+                      return res
+                        .status(400)
+                        .json({ status: "Error", Error: "Error occured" });
+                    }
+                    if (results.length > 0) {
+                      if (req.files?.length > 0) {
+                        for (const image of req.files) {
+                          conn.query(
+                            `INSERT INTO propertyimagesforupdate (image, propertyID) VALUES ('${
+                              image.filename
+                            }', '${
+                              results[parseInt(results?.length) - 1].propertyID
+                            }')`,
+                            (err, results, fields) => {
+                              if (err) {
+                                console.log(err);
+                              }
+                            }
+                          );
+                        }
+
+                        return res.status(200).json({ status: "Success" });
+                      }
+                      res.status(200).json({ status: "Success" });
+                    }
+                  }
+                );
+              }
+            }
+          );
         }
+      }
+    }
+  );
+});
+
+export const createLikePost = TryCatch(async (req, res) => {
+  const { userId, propertyID } = req.body;
+
+  if (propertyID == "" || propertyID == null)
+    return res.status(400).json({ status: "Error", Error: "Error occured" });
+
+  if (userId == "" || userId == null)
+    return res.status(400).json({ status: "Error", Error: "Error occured" });
+
+  conn.query(
+    `SELECT * FROM likedproperty WHERE propertyID='${propertyID}' AND userId='${userId}'`,
+    (err, results, fields) => {
+      if (err) {
+        console.log(err);
+        return res
+          .status(400)
+          .json({ status: "Error", Error: "Error occured" });
+      }
+
+      if (results) {
+        if (results.length > 0) {
+          console.log("here");
+          console.log(results[0]);
+          conn.query(
+            `UPDATE likedproperty SET likes=${
+              parseInt(results[0].likes) + 1
+            } WHERE likedPropertyId=${results[0].likedPropertyId}`,
+            (err, results, fields) => {
+              if (err) {
+                console.log(err);
+                return res
+                  .status(400)
+                  .json({ status: "Error", Error: "Error occured" });
+              }
+
+              if (results) {
+                res.status(200).json({ status: "Success" });
+              }
+            }
+          );
+        } else {
+          conn.query(
+            `INSERT INTO likedproperty (likes, propertyID, userId) VALUES (1, '${propertyID}', '${userId}')`,
+            (err, results, fields) => {
+              if (err) {
+                console.log(err);
+                return res
+                  .status(400)
+                  .json({ status: "Error", Error: "Error occured" });
+              }
+
+              if (results) {
+                res.status(200).json({ status: "Success" });
+              }
+            }
+          );
+        }
+      }
+    }
+  );
+});
+export const createDislikePost = TryCatch(async (req, res) => {
+  const { userId, propertyID } = req.body;
+
+  if (propertyID == "" || propertyID == null)
+    return res.status(400).json({ status: "Error", Error: "Error occured" });
+
+  if (userId == "" || userId == null)
+    return res.status(400).json({ status: "Error", Error: "Error occured" });
+
+  conn.query(
+    `SELECT * FROM dislikedproperty WHERE propertyID='${propertyID}' AND userId='${userId}'`,
+    (err, results, fields) => {
+      if (err) {
+        console.log(err);
+        return res
+          .status(400)
+          .json({ status: "Error", Error: "Error occured" });
+      }
+
+      if (results) {
+        if (results.length > 0) {
+          conn.query(
+            `UPDATE dislikedproperty SET likes=${
+              parseInt(results[0].likes) + 1
+            } WHERE dislikedPropertyId=${results[0].dislikedPropertyId}`,
+            (err, results, fields) => {
+              if (err) {
+                console.log(err);
+                return res
+                  .status(400)
+                  .json({ status: "Error", Error: "Error occured" });
+              }
+
+              if (results) {
+                res.status(200).json({ status: "Success" });
+              }
+            }
+          );
+        } else {
+          conn.query(
+            `INSERT INTO dislikedproperty (dislikes, propertyID, userId) VALUES (1, '${propertyID}', '${userId}')`,
+            (err, results, fields) => {
+              if (err) {
+                console.log(err);
+                return res
+                  .status(400)
+                  .json({ status: "Error", Error: "Error occured" });
+              }
+
+              if (results) {
+                res.status(200).json({ status: "Success" });
+              }
+            }
+          );
+        }
+      }
+    }
+  );
+});
+
+export const createCommentPost = TryCatch(async (req, res) => {
+  const { userId, propertyID, comment } = req.body;
+
+  if (propertyID == "" || propertyID == null)
+    return res.status(400).json({ status: "Error", Error: "Error occured" });
+
+  if (userId == "" || userId == null)
+    return res.status(400).json({ status: "Error", Error: "Error occured" });
+
+  if (comment == "" || comment == null)
+    return res
+      .status(400)
+      .json({ status: "Error", Error: "Comment is required" });
+
+  conn.query(
+    `INSERT INTO comment (comment, propertyID, userId) VALUES ('${comment}', '${propertyID}', '${userId}')`,
+    (err, results, fields) => {
+      if (err) {
+        console.log(err);
+        return res
+          .status(400)
+          .json({ status: "Error", Error: "Error occured" });
+      }
+
+      if (results) {
+        res.status(200).json({ status: "Success" });
       }
     }
   );

@@ -28,7 +28,7 @@
       <div class="p-2 px-3" id="login-container"></div>
     </nav>
 
-    <!-- <div class="p-3 py-3" id="property-container-nav"></div> -->
+    <div id="property-message-nav"></div>
 
     <div class="p-3 py-3 container" id="property-container"></div>
 
@@ -54,9 +54,18 @@
             ></button>
           </div>
           <div class="modal-body">
-            <form id="add-new-property">
+            <form id="update-property-form" enctype="multipart/form-data">
               <div class="py-1 px-3">
                 <div class="row g-2 mb-3 align-items-center">
+                  <!-- <div class="col-6" hidden>
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="propertyIDHolder"
+                      aria-describedby="propertyID"
+                      name="propertyID"
+                    />
+                  </div> -->
                   <div class="col-6">
                     <input
                       type="text"
@@ -167,7 +176,12 @@
                 </div>
               </div>
               <div class="py-3">
-                <button type="submit" class="btn btn-primary">
+                <button
+                  type="submit"
+                  class="btn btn-primary"
+                  data-bs-dismiss="modal"
+                  aria-label="Close"
+                >
                   Save Changes
                 </button>
               </div>
