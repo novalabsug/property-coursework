@@ -14,13 +14,16 @@ export const registerPost = TryCatch(async (req, res) => {
 
   // check if username is unique
   conn.query(
-    `SELECT * FROM users WHERE accountType='${accountType}'`,
+    `SELECT * FROM users WHERE username='${username}'`,
     (err, results, fields) => {
-      if (err)
+      if (err) {
+        console.log(err);
         return res
           .status(400)
           .json({ status: "Error", Error: "Error occured" });
+      }
       if (results) {
+        console.log(results);
         if (results.length > 0)
           return res
             .status(400)
@@ -35,19 +38,23 @@ export const registerPost = TryCatch(async (req, res) => {
           conn.query(
             `INSERT INTO users (name, username, accountType, email, password) values ('${name}', '${username}', '${accountType}', '${email}', '${hash}')`,
             (err, results, fields) => {
-              if (err)
+              if (err) {
+                console.log(err);
                 return res
                   .status(400)
                   .json({ status: "Error", Error: "Error occured" });
+              }
 
               if (results) {
                 conn.query(
                   `SELECT userId, name, username, accountType, email FROM users WHERE username='${username}'`,
                   (err, results, fields) => {
-                    if (err)
+                    if (err) {
+                      console.log(err);
                       return res
                         .status(400)
                         .json({ status: "Error", Error: "Error occured" });
+                    }
 
                     if (results)
                       return res
