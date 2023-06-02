@@ -4,13 +4,18 @@ import {
   addPropertyForUpdatePost,
   createCommentPost,
   createDislikePost,
+  createLeasedPropertyPost,
   createLikePost,
   createPropertyPost,
+  deletePropertyComment,
   fetchAllPropertiesGet,
+  fetchLeasedProperties,
   fetchPropertiesGet,
   fetchPropertyPost,
   registerPost,
   signinPost,
+  updateLeasedPropertStatus,
+  updatePropertyComment,
 } from "../controller/Controller.js";
 import multer from "multer";
 import { v4 as uniqueString } from "uuid";
@@ -42,6 +47,15 @@ router.post(
 );
 router.post("/property/like", createLikePost);
 router.post("/property/dislike", createDislikePost);
-router.post("/property/comment", createCommentPost);
+router
+  .route("/property/comment")
+  .post(createCommentPost)
+  .put(updatePropertyComment);
+router.delete("/property/comment/:id", deletePropertyComment);
+router
+  .route("/property/lease")
+  .post(createLeasedPropertyPost)
+  .put(updateLeasedPropertStatus);
+router.get("/properties/leased/:id", fetchLeasedProperties);
 
 export default router;

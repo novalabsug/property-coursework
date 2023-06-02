@@ -175,7 +175,6 @@ export const createPropertyPost = TryCatch(async (req, res) => {
 });
 
 export const fetchAllPropertiesGet = TryCatch(async (req, res) => {
-  console.log("I am here");
   conn.query("SELECT * FROM property", (err, results, fields) => {
     let Properties = results;
 
@@ -188,16 +187,28 @@ export const fetchAllPropertiesGet = TryCatch(async (req, res) => {
       if (Properties.length <= 0)
         return res.status(200).json({ status: "Success", Properties });
 
-      for (let property of Properties) {
+      Properties.forEach((property, index) => {
         conn.query(
-          `SELECT image FROM propertyimages WHERE propertyID = '${property.propertyID}'`,
-          (err, results, fields) => {
-            console.log(Properties);
-            property.image = results[0].image;
-            res.status(200).json({ status: "Success", Properties });
+          `SELECT * FROM leasedProperty WHERE propertyID='${property.propertyID}' AND status='active'`,
+          (err, LeasedProperty, fields) => {
+            if (LeasedProperty) {
+              console.log(LeasedProperty);
+              property.leased = LeasedProperty?.length > 0 ? true : false;
+              conn.query(
+                `SELECT image FROM propertyimages WHERE propertyID = '${property.propertyID}'`,
+                (err, results, fields) => {
+                  property.image = results[0].image;
+
+                  if (index == Properties.length - 1)
+                    return res
+                      .status(200)
+                      .json({ status: "Success", Properties });
+                }
+              );
+            }
           }
         );
-      }
+      });
     }
   });
 });
@@ -292,7 +303,7 @@ export const fetchPropertyPost = TryCatch(async (req, res) => {
 
                             if (Dislikes) {
                               conn.query(
-                                `SELECT comment.comment, users.username FROM comment INNER JOIN users ON comment.userId = users.userId WHERE comment.propertyID = '${Property[0].propertyID}'`,
+                                `SELECT comment.commentId, comment.comment, users.username, users.userId FROM comment INNER JOIN users ON comment.userId = users.userId WHERE comment.propertyID = '${Property[0].propertyID}'`,
                                 (err, Comments, fields) => {
                                   if (err) {
                                     console.log(err);
@@ -381,7 +392,7 @@ export const fetchPropertyPost = TryCatch(async (req, res) => {
 
                               if (Dislikes) {
                                 conn.query(
-                                  `SELECT comment.comment, users.username FROM comment INNER JOIN users ON comment.userId = users.userId WHERE comment.propertyID = '${Property[0].propertyID}'`,
+                                  `SELECT comment.commentId, comment.comment, users.username, users.userId FROM comment INNER JOIN users ON comment.userId = users.userId WHERE comment.propertyID = '${Property[0].propertyID}'`,
                                   (err, Comments, fields) => {
                                     if (err) {
                                       console.log(err);
@@ -392,14 +403,76 @@ export const fetchPropertyPost = TryCatch(async (req, res) => {
                                     }
 
                                     if (Comments) {
-                                      res.status(200).json({
-                                        status: "Success",
-                                        Property,
-                                        PropertyImages: images,
-                                        Likes,
-                                        Dislikes,
-                                        Comments,
-                                      });
+                                      conn.query(
+                                        `SELECT * FROM leasedproperty WHERE propertyID = '${Property[0].propertyID}' AND status='requested'`,
+                                        (err, LeasedProperty, fields) => {
+                                          if (err) {
+                                            console.log(err);
+                                            return res.status(400).json({
+                                              status: "Error",
+                                              Error: "Error occured",
+                                            });
+                                          }
+
+                                          console.log(LeasedProperty);
+
+                                          if (LeasedProperty) {
+                                            console.log(LeasedProperty.length);
+                                            if (LeasedProperty.length > 0) {
+                                              conn.query(
+                                                `SELECT name, email FROM users WHERE userId = '${LeasedProperty[0].userId}'`,
+                                                (err, user, fields) => {
+                                                  if (err) {
+                                                    console.log(err);
+                                                    return res
+                                                      .status(400)
+                                                      .json({
+                                                        status: "Error",
+                                                        Error: "Error occured",
+                                                      });
+                                                  }
+
+                                                  console.log(user);
+
+                                                  if (user) {
+                                                    res.status(200).json({
+                                                      status: "Success",
+                                                      Property,
+                                                      PropertyImages: images,
+                                                      Likes,
+                                                      Dislikes,
+                                                      Comments,
+                                                      LeasedPropertyRequest: {
+                                                        leasedPropertyId:
+                                                          LeasedProperty[0]
+                                                            .leasedPropertyId,
+                                                        leaseDuration:
+                                                          LeasedProperty[0]
+                                                            .duration,
+                                                        IsLeased: true,
+                                                      },
+                                                      User: user[0],
+                                                    });
+                                                  }
+                                                }
+                                              );
+
+                                              return;
+                                            }
+                                            res.status(200).json({
+                                              status: "Success",
+                                              Property,
+                                              PropertyImages: images,
+                                              Likes,
+                                              Dislikes,
+                                              Comments,
+                                              LeasedPropertyRequest: {
+                                                IsLeased: false,
+                                              },
+                                            });
+                                          }
+                                        }
+                                      );
                                     }
                                   }
                                 );
@@ -466,7 +539,7 @@ export const fetchPropertyPost = TryCatch(async (req, res) => {
 
                               if (Dislikes) {
                                 conn.query(
-                                  `SELECT comment.comment, users.username FROM comment INNER JOIN users ON comment.userId = users.userId WHERE comment.propertyID = '${Property[0].propertyID}'`,
+                                  `SELECT comment.commentId, comment.comment, users.username, users.userId FROM comment INNER JOIN users ON comment.userId = users.userId WHERE comment.propertyID = '${Property[0].propertyID}'`,
                                   (err, Comments, fields) => {
                                     if (err) {
                                       console.log(err);
@@ -477,14 +550,45 @@ export const fetchPropertyPost = TryCatch(async (req, res) => {
                                     }
 
                                     if (Comments) {
-                                      res.status(200).json({
-                                        status: "Success",
-                                        Property,
-                                        PropertyImages: images,
-                                        Likes,
-                                        Dislikes,
-                                        Comments,
-                                      });
+                                      conn.query(
+                                        `SELECT * FROM leasedproperty WHERE propertyID='${Property[0].propertyID}'`,
+                                        (err, LeasedProperty, fields) => {
+                                          if (err) {
+                                            console.log(err);
+                                            return res.status(400).json({
+                                              status: "Error",
+                                              Error: "Error occured",
+                                            });
+                                          }
+
+                                          if (LeasedProperty) {
+                                            if (LeasedProperty.length > 0)
+                                              return res.status(200).json({
+                                                status: "Success",
+                                                Property,
+                                                PropertyImages: images,
+                                                Likes,
+                                                Dislikes,
+                                                Comments,
+                                                LeasedProperty:
+                                                  LeasedProperty[0]?.status ==
+                                                  "active"
+                                                    ? true
+                                                    : false,
+                                              });
+
+                                            res.status(200).json({
+                                              status: "Success",
+                                              Property,
+                                              PropertyImages: images,
+                                              Likes,
+                                              Dislikes,
+                                              Comments,
+                                              LeasedProperty: false,
+                                            });
+                                          }
+                                        }
+                                      );
                                     }
                                   }
                                 );
@@ -609,7 +713,7 @@ export const addPropertyForUpdatePost = TryCatch(async (req, res) => {
                       if (req.files?.length > 0) {
                         for (const image of req.files) {
                           conn.query(
-                            `DELETE * FROM propertyimagesforupdate WHERE propertyID='${
+                            `DELETE FROM propertyimagesforupdate WHERE propertyID='${
                               propertyForUpdate[
                                 parseInt(propertyForUpdate?.length) - 1
                               ].propertyID
@@ -756,6 +860,7 @@ export const createLikePost = TryCatch(async (req, res) => {
     }
   );
 });
+
 export const createDislikePost = TryCatch(async (req, res) => {
   const { userId, propertyID } = req.body;
 
@@ -778,8 +883,8 @@ export const createDislikePost = TryCatch(async (req, res) => {
       if (results) {
         if (results.length > 0) {
           conn.query(
-            `UPDATE dislikedproperty SET likes=${
-              parseInt(results[0].likes) + 1
+            `UPDATE dislikedproperty SET dislikes=${
+              parseInt(results[0].dislikes) + 1
             } WHERE dislikedPropertyId=${results[0].dislikedPropertyId}`,
             (err, results, fields) => {
               if (err) {
@@ -842,6 +947,195 @@ export const createCommentPost = TryCatch(async (req, res) => {
 
       if (results) {
         res.status(200).json({ status: "Success" });
+      }
+    }
+  );
+});
+
+export const updatePropertyComment = TryCatch(async (req, res) => {
+  const { commentId, comment } = req.body;
+
+  if (commentId == "" || commentId == null)
+    return res.status(400).json({ status: "Error", Error: "Error occured" });
+
+  if (comment == "" || comment == null)
+    return res
+      .status(400)
+      .json({ status: "Error", Error: "Comment is required" });
+
+  conn.query(
+    `UPDATE comment SET comment='${comment}' WHERE commentId='${commentId}'`,
+    (err, results, fields) => {
+      if (err) {
+        console.log(err);
+        return res
+          .status(400)
+          .json({ status: "Error", Error: "Error occured" });
+      }
+
+      if (results) {
+        res.status(200).json({ status: "Success" });
+      }
+    }
+  );
+});
+
+export const deletePropertyComment = TryCatch(async (req, res) => {
+  const commentId = req.params.id;
+
+  if (commentId == "" || commentId == null)
+    return res.status(400).json({ status: "Error", Error: "Error occured" });
+
+  conn.query(
+    `DELETE FROM comment WHERE commentId=${commentId}`,
+    (err, results, fields) => {
+      if (err) {
+        console.log(err);
+        return res
+          .status(400)
+          .json({ status: "Error", Error: "Error occured" });
+      }
+
+      if (results) {
+        res.status(200).json({ status: "Success" });
+      }
+    }
+  );
+});
+
+export const createLeasedPropertyPost = TryCatch(async (req, res) => {
+  const { propertyID, userId, duration } = req.body;
+
+  if (propertyID == "" || propertyID == null)
+    return res.status(400).json({ status: "Error", Error: "Error occured" });
+
+  if (userId == "" || userId == null)
+    return res.status(400).json({ status: "Error", Error: "Error occured" });
+
+  if (duration == "" || duration == null)
+    return res
+      .status(400)
+      .json({ status: "Error", Error: "Duration is required" });
+
+  conn.query(
+    `SELECT * FROM leasedproperty WHERE propertyID = '${propertyID}'`,
+    (err, results, fields) => {
+      if (err) {
+        console.log(err);
+        return res
+          .status(400)
+          .json({ status: "Error", Error: "Error occured" });
+      }
+
+      console.log(results);
+
+      if (results) {
+        if (results[0]?.status == "requested") {
+          conn.query(
+            `UPDATE leasedproperty SET duration='${duration}' WHERE propertyID=${propertyID} AND status='requested'`,
+            (err, results, fields) => {
+              if (err) {
+                console.log(err);
+                return res
+                  .status(400)
+                  .json({ status: "Error", Error: "Error occured" });
+              }
+
+              if (results) {
+                res.status(200).json({ status: "Success" });
+              }
+            }
+          );
+        } else {
+          conn.query(
+            `INSERT INTO leasedproperty (propertyID, userId, duration, status) VALUES ('${propertyID}', '${userId}', '${duration}', 'requested')`,
+            (err, results, fields) => {
+              if (err) {
+                console.log(err);
+                return res
+                  .status(400)
+                  .json({ status: "Error", Error: "Error occured" });
+              }
+
+              if (results) {
+                res.status(200).json({ status: "Success" });
+              }
+            }
+          );
+        }
+      }
+    }
+  );
+});
+
+export const fetchLeasedProperties = TryCatch(async (req, res) => {
+  const userId = req.params.id;
+
+  if (userId == "" || userId == null)
+    return res.status(400).json({ status: "Error", Error: "Error occured" });
+
+  conn.query(
+    `SELECT * FROM leasedproperty WHERE userId='${userId}' AND status='active'`,
+    (err, results, fields) => {
+      const LeasedProperties = [];
+
+      if (err) {
+        console.log(err);
+        return res
+          .status(400)
+          .json({ status: "Error", Error: "Error occured" });
+      }
+
+      if (results) {
+        if (results.length > 0) {
+          results.forEach((result, index) => {
+            conn.query(
+              `SELECT * FROM property WHERE propertyID = '${result.propertyID}'`,
+              (err, property, fields) => {
+                conn.query(
+                  `SELECT image FROM propertyimages WHERE propertyID='${result.propertyID}'`,
+                  (err, image, fields) => {
+                    if (image) {
+                      property[0].image = image[0].image;
+                      LeasedProperties.push(property[0]);
+
+                      if (index == results.length - 1) {
+                        return res
+                          .status(200)
+                          .json({ status: "Success", LeasedProperties });
+                      }
+                    }
+                  }
+                );
+              }
+            );
+          });
+        } else {
+          return res.status(200).json({ status: "Success", LeasedProperties });
+        }
+      }
+    }
+  );
+});
+
+export const updateLeasedPropertStatus = TryCatch(async (req, res) => {
+  const { LeasedPropertyId } = req.body;
+
+  if (LeasedPropertyId == "" || LeasedPropertyId == null)
+    return res.status(400).json({ status: "Error", Error: "Error occured" });
+
+  conn.query(
+    `UPDATE leasedproperty SET status='active' WHERE leasedPropertyId='${LeasedPropertyId}'`,
+    (err, results, fields) => {
+      if (err) {
+        console.log(err);
+        return res
+          .status(400)
+          .json({ status: "Error", Error: "Error occured" });
+      }
+
+      if (results) {
+        return res.status(200).json({ status: "Success" });
       }
     }
   );

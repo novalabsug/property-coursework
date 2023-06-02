@@ -44,6 +44,9 @@ $(document).ready(async () => {
     let PropertyLikes = [];
     let PropertyDislikes = [];
     let Comments = [];
+    let LeasedProperty = false;
+    let LeasedPropertyRequest = false;
+    let LeasedUser = {};
 
     if (data.status == "Success") {
       Property = data.Property;
@@ -51,9 +54,12 @@ $(document).ready(async () => {
       PropertyLikes = data?.Likes ? data?.Likes : 0;
       PropertyDislikes = data?.Dislikes ? data?.Dislikes : 0;
       Comments = data?.Comments ? data?.Comments : [];
+      LeasedProperty = data?.LeasedProperty ? data?.LeasedProperty : false;
+      LeasedPropertyRequest = data?.LeasedPropertyRequest
+        ? data?.LeasedPropertyRequest
+        : false;
+      LeasedUser = data?.User ? data?.User : {};
     }
-
-    console.log(Comments);
 
     if (Property.length > 0) {
       $("#property-container").html(`
@@ -121,7 +127,7 @@ $(document).ready(async () => {
                     ? `
                     <div class="py-2">
                         <div class="d-flex">
-                            <div class="p-2 px-3">
+                            <div class="p-2 px-1">
                                 <a
                                 class="p-1 px-3 btn bg-body border-dark"
                                 data-bs-toggle="modal"
@@ -132,7 +138,7 @@ $(document).ready(async () => {
                                 Edit property
                                 </a>
                             </div>
-                            <div class="p-2 px-3">
+                            <div class="p-2 px-1">
                                 <button
                                 class="p-1 px-3 btn btn-danger"
                                 id="delete-property-btn"
@@ -142,6 +148,19 @@ $(document).ready(async () => {
                                 Delete property
                                 </button>
                             </div>
+                            ${
+                              LeasedPropertyRequest?.IsLeased
+                                ? `
+                            <div class="p-2 px-1">
+                              <button class="p-1 px-3 btn btn-secondary" id="confirm-lease-property-btn" data-bs-target="#confirmLeasePropertyForm"
+                              data-bs-toggle="modal" data-target="${LeasedPropertyRequest?.leasedPropertyId}">
+                              <i class="fa-solid fa-building fs-5 text-light" data-target="${LeasedPropertyRequest?.leasedPropertyId}"></i>
+                              View Lease Request
+                              </button>
+                            </div>
+                            `
+                                : ``
+                            }
                         </div>
                     </div>
                 `
@@ -153,7 +172,9 @@ $(document).ready(async () => {
                 <div class="py-2">
                     <div class="d-flex">
                         <div class="p-2 px-3">
-                            <button class="p-1 px-3 btn btn-success" id="like-property-btn" data-target="${Property[0]?.propertyID}">
+                            <button class="p-1 px-3 btn btn-success" id="like-property-btn" data-target="${
+                              Property[0]?.propertyID
+                            }">
                             <i class="fa-solid fa-thumbs-up fs-5 text-light"></i>
                             Like
                             </button>
@@ -168,6 +189,20 @@ $(document).ready(async () => {
                             Dislike
                             </button>
                         </div>
+                        ${
+                          LeasedProperty
+                            ? `
+                          `
+                            : `
+                            <div class="p-2 px-3">
+                              <button class="p-1 px-3 btn btn-secondary" id="lease-property-btn" data-bs-target="#leasePropertyForm"
+                              data-bs-toggle="modal" data-target="${Property[0]?.propertyID}">
+                              <i class="fa-solid fa-building fs-5 text-light"></i>
+                              Lease property
+                              </button>
+                            </div>
+                            `
+                        }
                     </div>
                 </div>
                 `
@@ -221,16 +256,32 @@ $(document).ready(async () => {
           LoggedInUser?.accountType
             ? `
                 <div class="py-3">
+                    <div id="comment-message-holder"></div>
                     <h4 class="fs-4">Comments</h4>
                     ${
                       Comments?.length
                         ? Comments.length > 0
-                          ? `<div class="d-flex py-3 flex-wrap overflow-auto" style="height: 200px;">
+                          ? `<div class="d-flex py-3 flex-wrap overflow-auto" bg-success style="height: 250px;">
                             ${Comments.map(
                               (comment, index) => `
-                                <div class="w-25 mx-1 my-2 border-1 border-dark rounded-3">
+                                <div class="w-25 mx-1 my-2 p-2 bg-light rounded-3">
                                     <p class="fs-6">${comment.comment}</p>
                                     <h4 class="fs-6">${comment.username}</h4>
+                                    ${
+                                      comment?.userId == LoggedInUser?.userId
+                                        ? `
+                                        <div class="d-flex justify-content-between py-1">
+                                      <a style="cursor: pointer;" id="update-form-btn" class="text-decoration-none" data-bs-target="#updateCommentForm"
+                                      data-bs-toggle="modal" data-target="${comment.commentId}">
+                                        <i class="fa-solid fa-edit text-success fs-4" data-target="${comment.commentId}"></i>
+                                      </a>
+                                      <a style="cursor: pointer;" class="text-decoration-none" id="delete-comment" data-target="${comment.commentId}">
+                                        <i class="fa-solid fa-trash text-danger fs-4" data-target="${comment.commentId}"></i>
+                                      </a>
+                                    </div>
+                                        `
+                                        : ""
+                                    }
                                 </div>
                                 `
                             )}
@@ -265,6 +316,80 @@ $(document).ready(async () => {
                 )}
         </div>
         `);
+
+      $("#update-form-btn").click((event) => {
+        const div = document.createElement("div");
+        div.innerHTML = `
+          <input type="text" name="commentId" value="${event.target.getAttribute(
+            "data-target"
+          )}" hidden />
+        `;
+
+        $("#update-comment-form")[0].append(div);
+      });
+
+      $("#lease-property-btn").click((event) => {
+        const div = document.createElement("div");
+        div.innerHTML = `
+          <input type="text" name="propertyID" value="${event.target.getAttribute(
+            "data-target"
+          )}" hidden />
+        `;
+
+        $("#lease-property-form")[0].append(div);
+      });
+
+      $("#confirm-lease-property-btn").click((event) => {
+        console.log("clicked");
+        const div = document.createElement("div");
+        div.className = "row g-2 mb-3 align-items-center";
+        div.innerHTML = `
+          <div class="col-4">
+            <h3 class="fs-6">User name</h3>
+            <p class="fs-5">${LeasedUser?.name}</p>
+          </div>
+          <div class="col-4">
+            <h3 class="fs-6">User email</h3>
+            <p class="fs-5">${LeasedUser?.email}</p>
+          </div>
+          <div class="col-4">
+            <h3 class="fs-6">Lease duration</h3>
+            <p class="fs-5">${new Date(
+              LeasedPropertyRequest?.leaseDuration
+            ).toLocaleDateString()}</p>
+          </div>
+          <input type="text" name="leasePropertyId" value="${
+            LeasedPropertyRequest?.leasedPropertyId
+          }" hidden />
+        `;
+
+        $("#confirm-lease-property-form-content").append(div);
+      });
+
+      // delete comment
+      $("#delete-comment").click(async (event) => {
+        const commentId = event.target.getAttribute("data-target");
+
+        const res = await fetch(`/property/comment/${commentId}`, {
+          method: "DELETE",
+        });
+
+        const data = await res.json();
+
+        if (data.status == "Success") {
+          $("#comment-message-holder").html(`
+            <div class="py-3">
+              <p class="text-success fs-4">Comment has been deleted</p>
+            </div>
+          `);
+
+          setTimeout(() => {
+            $("#comment-message-holder").html("");
+
+            location.reload();
+          }, 4000);
+        }
+      });
 
       $("#comment-form").submit(async (event) => {
         event.preventDefault();
@@ -435,4 +560,144 @@ $(document).ready(async () => {
     console.log(error);
     $("#property-message-nav").html("");
   }
+});
+
+// handle update comment form
+$("#update-comment-form").submit(async (event) => {
+  event.preventDefault();
+
+  const comment = event.target.comment.value;
+  const commentId = event.target.commentId.value;
+
+  try {
+    const res = await fetch("/property/comment", {
+      method: "PUT",
+      body: JSON.stringify({
+        comment,
+        commentId,
+      }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    const data = await res.json();
+
+    if (data.status == "Success") {
+      $("#update-comment-message-form").html(`
+        <p class="text-success fs-5">Comment updated successfully</p>
+      `);
+
+      setTimeout(() => {
+        $("#update-comment-message-form").html("");
+
+        location.reload();
+      }, 5000);
+    }
+
+    if (data.Error) {
+      $("#update-comment-message-form").html(`
+      <p class="text-danger fs-5">${data.Error}</p>
+    `);
+
+      setTimeout(() => {
+        $("#update-comment-message-form").html("");
+      }, 5000);
+    }
+  } catch (error) {
+    console.log(error);
+  }
+});
+
+// set min leasedProperty form date picker value
+$("#duration-date-picker")[0].min = new Date().toISOString().split("T")[0];
+
+// handle submiting leased property form
+$("#lease-property-form").submit(async (event) => {
+  event.preventDefault();
+
+  const duration = event.target.duration.value;
+  const propertyID = event.target.propertyID.value;
+
+  try {
+    const res = await fetch("/property/lease", {
+      method: "POST",
+      body: JSON.stringify({
+        duration,
+        propertyID,
+        userId: LoggedInUser?.userId ? LoggedInUser?.userId : "",
+      }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    const data = await res.json();
+
+    if (data.status == "Success") {
+      $("#lease-property-message-form").html(`
+        <p class="text-success text-center fs-5">Lease has been requested and will be reviewed by property owner</p>
+      `);
+
+      setTimeout(() => {
+        $("#lease-property-message-form").html("");
+
+        location.reload();
+      }, 5000);
+    }
+
+    if (data.Error) {
+      $("#lease-property-message-form").html(`
+      <p class="text-danger fs-5">${data.Error}</p>
+    `);
+
+      setTimeout(() => {
+        $("#lease-property-message-form").html("");
+      }, 5000);
+    }
+  } catch (error) {
+    console.log(error);
+  }
+});
+
+$("#confirm-lease-property-form").submit(async (event) => {
+  event.preventDefault();
+
+  const LeasedPropertyId = event.target.leasePropertyId.value;
+
+  try {
+    const res = await fetch("/property/lease", {
+      method: "PUT",
+      body: JSON.stringify({
+        LeasedPropertyId,
+      }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    const data = await res.json();
+
+    if (data.status == "Success") {
+      $("#confirm-lease-property-form-message").html(`
+        <p class="text-success text-center fs-5">Lease confrimation successful</p>
+      `);
+
+      setTimeout(() => {
+        $("#confirm-lease-property-form-message").html("");
+
+        location.reload();
+      }, 5000);
+    }
+
+    if (data.Error) {
+      $("#confirm-lease-property-form-message").html(`
+      <p class="text-danger fs-5">${data.Error}</p>
+    `);
+
+      setTimeout(() => {
+        $("#confirm-lease-property-form-message").html("");
+      }, 5000);
+    }
+  } catch (error) {}
 });

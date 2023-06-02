@@ -28,9 +28,144 @@
       <div class="p-2 px-3" id="login-container"></div>
     </nav>
 
+    <div class=""></div>
     <div id="property-message-nav"></div>
 
     <div class="p-3 py-3 container" id="property-container"></div>
+
+    <!-- Update comment Modal -->
+    <div
+      class="modal fade"
+      id="updateCommentForm"
+      aria-hidden="true"
+      aria-labelledby="updateCommentFormLabel"
+      tabindex="-1"
+    >
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" id="updateCommentFormLabel">
+              Update comment
+            </h1>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <form id="update-comment-form">
+              <div class="py-1 px-3">
+                <div id="update-comment-message-form"></div>
+                <!-- <input type="text" name="commentId" value="" hidden /> -->
+                <div class="mb-3">
+                  <textarea
+                    class="form-control"
+                    id="comment"
+                    aria-describedby="comment"
+                    placeholder="Your comment"
+                    name="comment"
+                    rows="3"
+                  ></textarea>
+                </div>
+                <div class="py-1">
+                  <button class="btn btn-primary" type="submit">
+                    Update Comment
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Update comment Modal -->
+    <div
+      class="modal fade"
+      id="leasePropertyForm"
+      aria-hidden="true"
+      aria-labelledby="leasePropertyFormLabel"
+      tabindex="-1"
+    >
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" id="leasePropertyFormLabel">
+              Duration of lease
+            </h1>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <form id="lease-property-form">
+              <div class="py-1 px-3">
+                <div id="lease-property-message-form"></div>
+                <div class="mb-3">
+                  <input
+                    type="date"
+                    name="duration"
+                    id="duration-date-picker"
+                  />
+                </div>
+                <div class="py-1">
+                  <button class="btn btn-primary" type="submit">
+                    Request lease
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- confirm lease property Modal -->
+    <div
+      class="modal fade"
+      id="confirmLeasePropertyForm"
+      aria-hidden="true"
+      aria-labelledby="confirmLeasePropertyFormLabel"
+      tabindex="-1"
+    >
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" id="confirmLeasePropertyFormLabel">
+              Leased request details
+            </h1>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <form id="confirm-lease-property-form">
+              <div class="" id="confirm-lease-property-form-message"></div>
+              <div class="py-1 px-3">
+                <div id="confirm-lease-property-form-content"></div>
+                <div class="py-1">
+                  <button
+                    class="btn btn-primary"
+                    type="submit"
+                    id="confirm-lease-property-form-btn"
+                  >
+                    Confirm lease
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <!-- Modal -->
     <div
