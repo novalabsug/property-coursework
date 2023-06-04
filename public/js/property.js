@@ -1,25 +1,3 @@
-// // handle displaying the property details nav element
-// if (LoggedInUser?.accountType) {
-//   if (LoggedInUser?.accountType == "landlord") {
-//     $("#property-container-nav").html(`
-//         <div class="d-flex justify-content-end">
-//           <div class="p-2 px-3">
-//             <a class="p-1 px-3 btn bg-body border-dark" data-bs-toggle="modal" href="#editPropertyForm" role="button">
-//               <i class="fa fa-edit fs-5 primary-color"></i>
-//               Edit property
-//             </a>
-//           </div>
-//           <div class="p-2 px-3">
-//             <button class="p-1 px-3 btn btn-danger" id="delete-property-btn">
-//               <i class="fa-solid fa-trash fs-5 text-light"></i>
-//               Delete property
-//             </button>
-//           </div>
-//         </div>
-//       `);
-//   }
-// }
-
 // fetch property details
 $(document).ready(async () => {
   const propertyID = new URLSearchParams(window.location.search).get("id");
@@ -208,6 +186,18 @@ $(document).ready(async () => {
                 `
                     : ``
                 }
+
+                ${
+                  LoggedInUser?.accountType == "admin"
+                    ? `
+                  <div class="p-2 px-3">
+                    <button class="p-1 px-3 btn btn-primary" id="approve-action-btn">
+                      Approve
+                    </button>
+                  </div>
+                `
+                    : ``
+                }
             </div>
         </div>
         ${
@@ -317,6 +307,34 @@ $(document).ready(async () => {
         </div>
         `);
 
+      $("#approve-action-btn").click(async (event) => {
+        const actionType = new URLSearchParams(window.location.search).get(
+          "action"
+        );
+        const tableID = new URLSearchParams(window.location.search).get(
+          "tableID"
+        );
+
+        try {
+          const res = await fetch("/property/action", {
+            method: "POST",
+            body: JSON.stringify({
+              actionType,
+              tableID,
+            }),
+            headers: {
+              "Content-Type": "application/json",
+            },
+          });
+
+          const data = await res.json();
+
+          if (data?.status == "Success") {
+            location.assign("/");
+          }
+        } catch (error) {}
+      });
+
       $("#update-form-btn").click((event) => {
         const div = document.createElement("div");
         div.innerHTML = `
@@ -340,7 +358,6 @@ $(document).ready(async () => {
       });
 
       $("#confirm-lease-property-btn").click((event) => {
-        console.log("clicked");
         const div = document.createElement("div");
         div.className = "row g-2 mb-3 align-items-center";
         div.innerHTML = `

@@ -8,10 +8,12 @@ import {
   createLikePost,
   createPropertyPost,
   deletePropertyComment,
+  fetchAdminPropertiesPost,
   fetchAllPropertiesGet,
   fetchLeasedProperties,
   fetchPropertiesGet,
   fetchPropertyPost,
+  propertyActionPost,
   registerPost,
   signinPost,
   updateLeasedPropertStatus,
@@ -37,6 +39,7 @@ router.post("/register", registerPost);
 router.post("/signin", signinPost);
 router.post("/property/new", upload.array("photos", 10), createPropertyPost);
 router.get("/properties/:id", fetchPropertiesGet);
+router.get("/properties/admin/:id", fetchAdminPropertiesPost);
 router.post("/property", fetchPropertyPost);
 router.get("/all/properties", fetchAllPropertiesGet);
 router.post("/property/delete", addPropertyForDeletePost);
@@ -57,5 +60,6 @@ router
   .post(createLeasedPropertyPost)
   .put(updateLeasedPropertStatus);
 router.get("/properties/leased/:id", fetchLeasedProperties);
+router.post("/property/action", propertyActionPost);
 
 export default router;

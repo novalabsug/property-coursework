@@ -175,42 +175,47 @@ export const createPropertyPost = TryCatch(async (req, res) => {
 });
 
 export const fetchAllPropertiesGet = TryCatch(async (req, res) => {
-  conn.query("SELECT * FROM property", (err, results, fields) => {
-    let Properties = results;
+  conn.query(
+    "SELECT * FROM property WHERE status='approved'",
+    (err, results, fields) => {
+      let Properties = results;
 
-    if (err) {
-      console.log(err);
-      return res.status(400).json({ status: "Error", Error: "Error occured" });
-    }
+      if (err) {
+        console.log(err);
+        return res
+          .status(400)
+          .json({ status: "Error", Error: "Error occured" });
+      }
 
-    if (Properties) {
-      if (Properties.length <= 0)
-        return res.status(200).json({ status: "Success", Properties });
+      if (Properties) {
+        if (Properties.length <= 0)
+          return res.status(200).json({ status: "Success", Properties });
 
-      Properties.forEach((property, index) => {
-        conn.query(
-          `SELECT * FROM leasedProperty WHERE propertyID='${property.propertyID}' AND status='active'`,
-          (err, LeasedProperty, fields) => {
-            if (LeasedProperty) {
-              console.log(LeasedProperty);
-              property.leased = LeasedProperty?.length > 0 ? true : false;
-              conn.query(
-                `SELECT image FROM propertyimages WHERE propertyID = '${property.propertyID}'`,
-                (err, results, fields) => {
-                  property.image = results[0].image;
+        Properties.forEach((property, index) => {
+          conn.query(
+            `SELECT * FROM leasedProperty WHERE propertyID='${property.propertyID}' AND status='active'`,
+            (err, LeasedProperty, fields) => {
+              if (LeasedProperty) {
+                console.log(LeasedProperty);
+                property.leased = LeasedProperty?.length > 0 ? true : false;
+                conn.query(
+                  `SELECT image FROM propertyimages WHERE propertyID = '${property.propertyID}'`,
+                  (err, results, fields) => {
+                    property.image = results[0].image;
 
-                  if (index == Properties.length - 1)
-                    return res
-                      .status(200)
-                      .json({ status: "Success", Properties });
-                }
-              );
+                    if (index == Properties.length - 1)
+                      return res
+                        .status(200)
+                        .json({ status: "Success", Properties });
+                  }
+                );
+              }
             }
-          }
-        );
-      });
+          );
+        });
+      }
     }
-  });
+  );
 });
 
 export const fetchPropertiesGet = TryCatch(async (req, res) => {
@@ -220,7 +225,7 @@ export const fetchPropertiesGet = TryCatch(async (req, res) => {
     return res.status(400).json({ status: "Error", Error: "Error occured" });
 
   conn.query(
-    `SELECT * FROM property WHERE userId = ${ID}`,
+    `SELECT * FROM property WHERE userId = ${ID} AND status='approved'`,
     (err, results, fields) => {
       let Properties = results;
 
@@ -413,8 +418,6 @@ export const fetchPropertyPost = TryCatch(async (req, res) => {
                                               Error: "Error occured",
                                             });
                                           }
-
-                                          console.log(LeasedProperty);
 
                                           if (LeasedProperty) {
                                             console.log(LeasedProperty.length);
@@ -748,7 +751,7 @@ export const addPropertyForUpdatePost = TryCatch(async (req, res) => {
           );
         } else {
           conn.query(
-            `INSERT INTO propertyforupdate (propertyID, propertyName, propertyType, propertyLocation, propertyDescription, bedrooms, bathrooms, map, price, userId) VALUES ('${propertyID}','${propertyName}', '${propertyType}', '${propertyLocation}', '${propertyDescription}', '${bedrooms}', '${bathrooms}', '${map}', '${cost}', '${userId}')`,
+            `INSERT INTO propertyforupdate (propertyID, propertyName, propertyType, propertyLocation, propertyDescription, bedrooms, bathrooms, map, price, userId) VALUES ('${propertyID}'',${propertyName}', '${propertyType}', '${propertyLocation}', '${propertyDescription}', '${bedrooms}', '${bathrooms}', '${map}', '${cost}', '${userId}')`,
             (err, results, fields) => {
               if (err) {
                 console.log(err);
@@ -1139,4 +1142,308 @@ export const updateLeasedPropertStatus = TryCatch(async (req, res) => {
       }
     }
   );
+});
+
+export const fetchAdminPropertiesPost = TryCatch(async (req, res) => {
+  const ID = req.params.id ? req.params.id : null;
+
+  console.log(ID);
+
+  if (ID === null)
+    return res.status(400).json({ status: "Error", Error: "Error occured" });
+
+  conn.query(
+    "SELECT * FROM property WHERE status='pending'",
+    (err, PendingProperties, fields) => {
+      if (err) {
+        console.log(err);
+        return res
+          .status(400)
+          .json({ status: "Error", Error: "Error occured" });
+      }
+
+      if (PendingProperties) {
+        if (PendingProperties.length > 0) {
+          for (const property of PendingProperties) {
+            conn.query(
+              `SELECT image FROM propertyimages WHERE propertyID='${property.propertyID}'`,
+              (err, pendingPropertiesImages, fields) => {
+                if (err) {
+                  console.log(err);
+                  return res
+                    .status(400)
+                    .json({ status: "Error", Error: "Error occured" });
+                }
+
+                if (pendingPropertiesImages) {
+                  property.image = pendingPropertiesImages[0].image;
+                }
+              }
+            );
+          }
+        }
+        conn.query(
+          "SELECT * FROM propertyforupdate WHERE status='pending'",
+          (err, PendingPropertyForUpdate, fields) => {
+            if (err) {
+              console.log(err);
+              return res
+                .status(400)
+                .json({ status: "Error", Error: "Error occured" });
+            }
+
+            if (PendingPropertyForUpdate) {
+              if (PendingPropertyForUpdate.length > 0) {
+                for (const property of PendingPropertyForUpdate) {
+                  conn.query(
+                    `SELECT image FROM propertyimages WHERE propertyID='${property.propertyID}'`,
+                    (err, pendingPropertyForUpdateImages, fields) => {
+                      if (pendingPropertyForUpdateImages) {
+                        if (err) {
+                          console.log(err);
+                          return res
+                            .status(400)
+                            .json({ status: "Error", Error: "Error occured" });
+                        }
+
+                        property.image =
+                          pendingPropertyForUpdateImages[0].image;
+                      }
+                    }
+                  );
+                }
+              }
+              conn.query(
+                "SELECT * FROM propertyfordelete INNER JOIN property ON propertyfordelete.propertyID = property.propertyID WHERE propertyfordelete.status='pending'",
+                (err, PendingPropertyForDelete, fields) => {
+                  if (err) {
+                    console.log(err);
+                    return res
+                      .status(400)
+                      .json({ status: "Error", Error: "Error occured" });
+                  }
+
+                  if (PendingPropertyForDelete) {
+                    if (PendingPropertyForDelete.length > 0) {
+                      PendingPropertyForDelete.forEach((property, index) => {
+                        conn.query(
+                          `SELECT image FROM propertyimages WHERE propertyID='${property.propertyID}'`,
+                          (err, pendingPropertyForDeleteImages, fields) => {
+                            if (err) {
+                              console.log(err);
+                            }
+                            if (pendingPropertyForDeleteImages) {
+                              property.image =
+                                pendingPropertyForDeleteImages[0].image;
+
+                              if (
+                                index ==
+                                PendingPropertyForDelete.length - 1
+                              ) {
+                                res.status(200).json({
+                                  status: "Success",
+                                  PendingProperties,
+                                  PendingPropertyForDelete,
+                                  PendingPropertyForUpdate,
+                                });
+                                return;
+                              }
+                            }
+                          }
+                        );
+                      });
+                    } else {
+                      res.status(200).json({
+                        status: "Success",
+                        PendingProperties,
+                        PendingPropertyForDelete,
+                        PendingPropertyForUpdate,
+                      });
+                      return;
+                    }
+                  }
+                }
+              );
+            }
+          }
+        );
+      }
+    }
+  );
+});
+
+export const propertyActionPost = TryCatch(async (req, res) => {
+  const { actionType, tableID } = req.body;
+
+  console.log({ actionType, tableID });
+
+  if (actionType === null || actionType == "")
+    return res.status(400).json({ status: "Error", Error: "Error occured" });
+
+  if (tableID === null || tableID == "")
+    return res.status(400).json({ status: "Error", Error: "Error occured" });
+
+  if (actionType == "approval") {
+    conn.query(
+      `UPDATE property SET status='approved' WHERE propertyID='${tableID}'`,
+      (err, results, fields) => {
+        if (err) {
+          console.log(err);
+          return res
+            .status(400)
+            .json({ status: "Error", Error: "Error occured" });
+        }
+
+        if (results) {
+          res.status(200).json({ status: "Success" });
+        }
+      }
+    );
+  }
+  if (actionType == "update") {
+    conn.query(
+      `SELECT * FROM propertyforupdate WHERE propertyForUpdateId='${tableID}'`,
+      (err, results, fields) => {
+        if (err) {
+          console.log(err);
+          return res
+            .status(400)
+            .json({ status: "Error", Error: "Error occured" });
+        }
+
+        if (results) {
+          conn.query(
+            `SELECT * FROM property WHERE propertyID='${results[0].propertyID}'`,
+            (err, Property, fields) => {
+              if (err) {
+                console.log(err);
+                return res
+                  .status(400)
+                  .json({ status: "Error", Error: "Error occured" });
+              }
+
+              if (Property) {
+                conn.query(
+                  `UPDATE property SET ${
+                    results[0].propertyName == "" || !results[0].propertyName
+                      ? `propertyName='${Property[0]?.propertyName}',`
+                      : `propertyName='${results[0].propertyName}',`
+                  } ${
+                    results[0].propertyType == "" || !results[0].propertyType
+                      ? `propertyType='${Property[0]?.propertyType}',`
+                      : `propertyType='${results[0].propertyType}',`
+                  } ${
+                    results[0].propertyLocation == "" ||
+                    !results[0].propertyLocation
+                      ? `propertyLocation='${Property[0]?.propertyLocation}',`
+                      : `propertyLocation='${results[0].propertyLocation}',`
+                  } ${
+                    results[0].propertyDescription == "" ||
+                    !results[0].propertyDescription
+                      ? `propertyDescription='${Property[0]?.propertyDescription}',`
+                      : `propertyDescription='${results[0].propertyDescription}',`
+                  } ${
+                    results[0].bedrooms == 0 ||
+                    results[0].bedrooms == "" ||
+                    !results[0].bedrooms
+                      ? `bedrooms=${Property[0]?.bedrooms},`
+                      : `bedrooms='${parseInt(results[0].bedrooms)}',`
+                  } ${
+                    results[0].bathrooms == 0 ||
+                    results[0].bathrooms == "" ||
+                    !results[0].bathrooms
+                      ? `bathrooms=${Property[0]?.bathrooms},`
+                      : `bathrooms='${parseInt(results[0].bathrooms)}',`
+                  } ${
+                    results[0].map == "" || !results[0].map
+                      ? `map='${Property[0]?.map}',`
+                      : `map='${results[0].map}',`
+                  } ${
+                    results[0].price == "" || !results[0].price
+                      ? `price=${Property[0]?.price}`
+                      : `price=${parseInt(results[0].price)}`
+                  } WHERE propertyID='${tableID}'`,
+                  (err, results, fields) => {
+                    if (err) {
+                      console.log(err);
+                      return res
+                        .status(400)
+                        .json({ status: "Error", Error: "Error occured" });
+                    }
+
+                    if (results) {
+                      conn.query(
+                        `UPDATE propertyforupdate SET status='updated' WHERE propertyForUpdateId='${tableID}'`,
+                        (err, results, fiedls) => {
+                          if (err) {
+                            console.log(err);
+                            return res.status(400).json({
+                              status: "Error",
+                              Error: "Error occured",
+                            });
+                          }
+
+                          if (results) {
+                            res.status(200).json({ status: "Success" });
+                          }
+                        }
+                      );
+                    }
+                  }
+                );
+              }
+            }
+          );
+        }
+      }
+    );
+  }
+  if (actionType == "delete") {
+    conn.query(
+      `SELECT * FROM propertyfordelete WHERE propertyForDeleteId='${tableID}'`,
+      (err, results, fields) => {
+        if (err) {
+          console.log(err);
+          return res
+            .status(400)
+            .json({ status: "Error", Error: "Error occured" });
+        }
+
+        if (results) {
+          if (results.length > 0) {
+            conn.query(
+              `DELETE FROM property WHERE propertyID='${results[0].propertyID}'`,
+              (err, results, fields) => {
+                if (err) {
+                  console.log(err);
+                  return res
+                    .status(400)
+                    .json({ status: "Error", Error: "Error occured" });
+                }
+
+                if (results) {
+                  conn.query(
+                    `UPDATE propertyfordelete SET status='deleted' WHERE propertyForDeleteId='${tableID}'`,
+                    (err, results, fiedls) => {
+                      if (err) {
+                        console.log(err);
+                        return res.status(400).json({
+                          status: "Error",
+                          Error: "Error occured",
+                        });
+                      }
+
+                      if (results) {
+                        res.status(200).json({ status: "Success" });
+                      }
+                    }
+                  );
+                }
+              }
+            );
+          }
+        }
+      }
+    );
+  }
 });
