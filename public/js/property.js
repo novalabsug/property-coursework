@@ -17,6 +17,8 @@ $(document).ready(async () => {
 
     const data = await res.json();
 
+    console.log(data);
+
     let Property = [];
     let PropertyImages = [];
     let PropertyLikes = [];
@@ -200,6 +202,19 @@ $(document).ready(async () => {
                 }
             </div>
         </div>
+        ${
+          LoggedInUser?.accountType == "landlord"
+            ? ``
+            : `
+            <div class="py-4">
+              <h3 class="fs-4">Property By</h3>
+              <div class="py-1">
+                <p class="fs-5">Name: ${Property[0].username}</p>
+                <p class="fs-5">Email: ${Property[0].email}</p>
+              </div>
+            </div>
+        `
+        }
         ${
           LoggedInUser?.accountType == "tenant"
             ? `

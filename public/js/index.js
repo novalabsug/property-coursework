@@ -233,42 +233,98 @@ async function fetchLandlordProperties() {
 
     const data = await res.json();
 
-    let Properties = [];
+    console.log(data);
+
+    let PendingProperties = [];
+    let ApprovedProperties = [];
 
     if (data.status == "Success") {
-      Properties = data?.Properties;
+      ApprovedProperties = data?.ApprovedProperties;
+      PendingProperties = data?.PendingProperties;
 
-      if (Properties.length > 0) {
-        for (const property of Properties) {
-          const div = document.createElement("div");
-          div.className = "col";
-          div.innerHTML = `
-            <a href="property.html?id=${property?.propertyID}" class="card text-decoration-none">
-                <img src="upload/${property?.image}" class="card-img-top" alt="" />
-                <div class="card-body">
-                  <h5 class="card-title text-decoration-none primary-color">
-                  ${property?.bedrooms} Bedroom ${property?.propertyType}
-                  </h5>
-                  <div class="d-flex">
-                    <p class="card-text text-decoration-none dark-color">
-                    ${property?.propertyLocation}
-                    </p>
-                    <p class=" mx-3 text-decoration-none primary-color">
-                    UGX ${property?.price}
-                    </p>
-                  </div>
+      console.log({ ApprovedProperties, PendingProperties });
+
+      const approvedDiv = document.createElement("div");
+      approvedDiv.className = "py-3";
+      approvedDiv.innerHTML = `
+          <h3 class="fs-4">Approved properties</h3>
+          <div class="row row-cols-1 row-cols-md-3 g-4">
+          ${
+            ApprovedProperties.length > 0
+              ? ApprovedProperties.map(
+                  (property, index) =>
+                    `
+                <div class="col">
+                  <a href="property.html?id=${property?.propertyID}" class="card text-decoration-none">
+                    <img src="upload/${property?.image}" class="card-img-top" alt="" />
+                    <div class="card-body">
+                      <h5 class="card-title text-decoration-none primary-color">
+                      ${property?.bedrooms} Bedroom ${property?.propertyType}
+                      </h5>
+                      <div class="d-flex">
+                        <p class="card-text text-decoration-none dark-color">
+                        ${property?.propertyLocation}
+                        </p>
+                        <p class=" mx-3 text-decoration-none primary-color">
+                        UGX ${property?.price}
+                        </p>
+                      </div>
+                    </div>
+                  </a>
                 </div>
-            </a>
-            `;
-          $("#properties-wrapper").append(div);
-        }
-      } else {
-        $("#properties-wrapper").html(`
-          <div class="py-5">
-            <p class="text-center fs-3">No properties created yet</p>
+              `
+                )
+              : `
+            <div class="py-2">
+              <p class="text-center fs-3">No approved properties</p>
+            </div>
+          `
+          }
           </div>
-        `);
-      }
+        `;
+
+      $("#properties-container").append(approvedDiv);
+
+      const pendingDiv = document.createElement("div");
+      pendingDiv.className = "py-3";
+      pendingDiv.innerHTML = `
+          <h3 class="fs-4">Pending properties</h3>
+          <div class="row row-cols-1 row-cols-md-3 g-4">
+          ${
+            PendingProperties.length > 0
+              ? PendingProperties.map(
+                  (property, index) =>
+                    `
+                <div class="col">
+                  <a href="property.html?id=${property?.propertyID}" class="card text-decoration-none">
+                    <img src="upload/${property?.image}" class="card-img-top" alt="" />
+                    <div class="card-body">
+                      <h5 class="card-title text-decoration-none primary-color">
+                      ${property?.bedrooms} Bedroom ${property?.propertyType}
+                      </h5>
+                      <div class="d-flex">
+                        <p class="card-text text-decoration-none dark-color">
+                        ${property?.propertyLocation}
+                        </p>
+                        <p class=" mx-3 text-decoration-none primary-color">
+                        UGX ${property?.price}
+                        </p>
+                      </div>
+                    </div>
+                  </a>
+                </div>
+              `
+                )
+              : `
+            <div class="py-2">
+              <p class="text-center fs-3">No approved properties</p>
+            </div>
+          `
+          }
+          </div>
+        `;
+
+      $("#properties-container").append(pendingDiv);
     }
   } catch (error) {
     console.log(error);

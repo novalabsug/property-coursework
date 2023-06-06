@@ -227,27 +227,66 @@ export const fetchPropertiesGet = TryCatch(async (req, res) => {
   conn.query(
     `SELECT * FROM property WHERE userId = ${ID} AND status='approved'`,
     (err, results, fields) => {
-      let Properties = results;
+      let ApprovedProperties = results;
 
       if (err) {
+        console.log(err);
         return res
           .status(400)
           .json({ status: "Error", Error: "Error occured" });
       }
 
-      if (Properties) {
-        if (Properties.length <= 0)
-          return res.status(200).json({ status: "Success", Properties });
-
-        for (let property of Properties) {
-          conn.query(
-            `SELECT image FROM propertyimages WHERE propertyID = '${property.propertyID}'`,
-            (err, results, fields) => {
-              property.image = results[0].image;
-              res.status(200).json({ status: "Success", Properties });
-            }
-          );
+      if (ApprovedProperties) {
+        if (ApprovedProperties.length > 0) {
+          for (let property of ApprovedProperties) {
+            conn.query(
+              `SELECT image FROM propertyimages WHERE propertyID = '${property.propertyID}'`,
+              (err, results, fields) => {
+                property.image = results[0].image;
+                // res.status(200).json({ status: "Success", ApprovedProperties });
+              }
+            );
+          }
         }
+
+        conn.query(
+          `SELECT * FROM property WHERE userId = ${ID} AND status='pending'`,
+          (err, PendingProperties, fields) => {
+            if (err) {
+              console.log(err);
+              return res
+                .status(400)
+                .json({ status: "Error", Error: "Error occured" });
+            }
+
+            if (PendingProperties) {
+              if (PendingProperties.length <= 0)
+                return res.status(200).json({
+                  status: "Success",
+                  ApprovedProperties,
+                  PendingProperties,
+                });
+
+              console.log(PendingProperties);
+
+              PendingProperties.forEach((property, index) => {
+                conn.query(
+                  `SELECT image FROM propertyimages WHERE propertyID = '${property.propertyID}'`,
+                  (err, results, fields) => {
+                    property.image = results[0].image;
+
+                    if (index == PendingProperties.length - 1)
+                      return res.status(200).json({
+                        status: "Success",
+                        ApprovedProperties,
+                        PendingProperties,
+                      });
+                  }
+                );
+              });
+            }
+          }
+        );
       }
     }
   );
@@ -261,7 +300,7 @@ export const fetchPropertyPost = TryCatch(async (req, res) => {
 
   if (userId == "" || userId == null) {
     conn.query(
-      `SELECT * FROM property WHERE propertyID = ${propertyID}`,
+      `SELECT * FROM property INNER JOIN users ON property.userId = users.userID WHERE property.propertyID = ${propertyID}`,
       (err, results, fields) => {
         if (err) {
           console.log(err);
@@ -435,8 +474,6 @@ export const fetchPropertyPost = TryCatch(async (req, res) => {
                                                       });
                                                   }
 
-                                                  console.log(user);
-
                                                   if (user) {
                                                     res.status(200).json({
                                                       status: "Success",
@@ -495,7 +532,7 @@ export const fetchPropertyPost = TryCatch(async (req, res) => {
         }
       )
     : conn.query(
-        `SELECT * FROM property WHERE propertyID = ${propertyID}`,
+        `SELECT * FROM property INNER JOIN users ON property.userId = users.userID WHERE property.propertyID = ${propertyID}`,
         (err, results, fields) => {
           if (err) {
             console.log(err);
