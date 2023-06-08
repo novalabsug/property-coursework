@@ -32,14 +32,198 @@ $(document).ready(async () => {
       <div class="p-2">
         <div class="container d-flex justify-content-between">
           <h3 class="fs-3">Available properties</h3>
+          <div class="">
+            <p class="fs-5">Sort By:</p>
+            <div class="d-flex">
+              <button class="p-1 px-3 btn bg-body border-dark mx-2" id="sortByDateBtn" data-target="datePosted">Date Posted</button>
+              <button class="p-1 px-3 btn bg-body border-dark mx-2" id="sortByTypeBtn" data-target="type">Type</button>
+              <button class="p-1 px-3 btn bg-body border-dark mx-2" id="sortByPriceBtn" data-target="price">Price</button>
+            </div>
+          </div>
         </div>
       </div>
     `
   );
+
+  $("#sortByDateBtn")
+    .ready()
+    .click(async (event) => {
+      try {
+        const sortBy = event.target.getAttribute("data-target");
+        const res = await fetch(`/property/sort/${sortBy}`, {
+          method: "GET",
+        });
+
+        const data = await res.json();
+
+        let Properties = [];
+
+        if (data.status == "Success") {
+          Properties = data.Properties;
+
+          $("#properties-wrapper").html("");
+
+          if (Properties.length > 0) {
+            for (const property of Properties) {
+              if (!property?.leased) {
+                const div = document.createElement("div");
+                div.className = "col";
+                div.innerHTML = `
+              <a href="property.html?id=${property?.propertyID}" class="card text-decoration-none">
+                  <img src="upload/${property?.image}" class="card-img-top" alt="" />
+                  <div class="card-body">
+                    <h5 class="card-title text-decoration-none primary-color">
+                    ${property?.bedrooms} Bedroom ${property?.propertyType}
+                    </h5>
+                    <div class="d-flex">
+                      <p class="card-text text-decoration-none dark-color">
+                      ${property?.propertyLocation}
+                      </p>
+                      <p class=" mx-3 text-decoration-none primary-color">
+                      UGX ${property?.price}
+                      </p>
+                    </div>
+                  </div>
+              </a>
+              `;
+                $("#properties-wrapper").append(div);
+              }
+            }
+          } else {
+            $("#properties-wrapper").html(`
+          <div class="py-5">
+            <p class="text-center fs-2">Welcome to my properties website</p>
+          </div>
+        `);
+          }
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    });
+  $("#sortByPriceBtn")
+    .ready()
+    .click(async (event) => {
+      console.log(event.target);
+      try {
+        const sortBy = event.target.getAttribute("data-target");
+        console.log(sortBy);
+        const res = await fetch(`/property/sort/${sortBy}`, {
+          method: "GET",
+        });
+
+        const data = await res.json();
+
+        console.log(data);
+
+        let Properties = [];
+
+        if (data.status == "Success") {
+          Properties = data.Properties;
+
+          $("#properties-wrapper").html("");
+
+          if (Properties.length > 0) {
+            for (const property of Properties) {
+              if (!property?.leased) {
+                const div = document.createElement("div");
+                div.className = "col";
+                div.innerHTML = `
+              <a href="property.html?id=${property?.propertyID}" class="card text-decoration-none">
+                  <img src="upload/${property?.image}" class="card-img-top" alt="" />
+                  <div class="card-body">
+                    <h5 class="card-title text-decoration-none primary-color">
+                    ${property?.bedrooms} Bedroom ${property?.propertyType}
+                    </h5>
+                    <div class="d-flex">
+                      <p class="card-text text-decoration-none dark-color">
+                      ${property?.propertyLocation}
+                      </p>
+                      <p class=" mx-3 text-decoration-none primary-color">
+                      UGX ${property?.price}
+                      </p>
+                    </div>
+                  </div>
+              </a>
+              `;
+                $("#properties-wrapper").append(div);
+              }
+            }
+          } else {
+            $("#properties-wrapper").html(`
+          <div class="py-5">
+            <p class="text-center fs-2">Welcome to my properties website</p>
+          </div>
+        `);
+          }
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    });
+  $("#sortByTypeBtn")
+    .ready()
+    .click(async (event) => {
+      console.log(event.target);
+      try {
+        const sortBy = event.target.getAttribute("data-target");
+        console.log(sortBy);
+        const res = await fetch(`/property/sort/${sortBy}`, {
+          method: "GET",
+        });
+
+        const data = await res.json();
+
+        console.log(data);
+
+        let Properties = [];
+
+        if (data.status == "Success") {
+          Properties = data.Properties;
+
+          $("#properties-wrapper").html("");
+
+          if (Properties.length > 0) {
+            for (const property of Properties) {
+              if (!property?.leased) {
+                const div = document.createElement("div");
+                div.className = "col";
+                div.innerHTML = `
+              <a href="property.html?id=${property?.propertyID}" class="card text-decoration-none">
+                  <img src="upload/${property?.image}" class="card-img-top" alt="" />
+                  <div class="card-body">
+                    <h5 class="card-title text-decoration-none primary-color">
+                    ${property?.bedrooms} Bedroom ${property?.propertyType}
+                    </h5>
+                    <div class="d-flex">
+                      <p class="card-text text-decoration-none dark-color">
+                      ${property?.propertyLocation}
+                      </p>
+                      <p class=" mx-3 text-decoration-none primary-color">
+                      UGX ${property?.price}
+                      </p>
+                    </div>
+                  </div>
+              </a>
+              `;
+                $("#properties-wrapper").append(div);
+              }
+            }
+          } else {
+            $("#properties-wrapper").html(`
+          <div class="py-5">
+            <p class="text-center fs-2">Welcome to my properties website</p>
+          </div>
+        `);
+          }
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    });
 });
 
 async function fetchAdminProperties() {
-  console.log("called");
   try {
     const res = await fetch(`/properties/admin/${LoggedInUser?.userId}`, {
       method: "GET",

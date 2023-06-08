@@ -1312,8 +1312,6 @@ export const fetchAdminPropertiesPost = TryCatch(async (req, res) => {
 export const propertyActionPost = TryCatch(async (req, res) => {
   const { actionType, tableID } = req.body;
 
-  console.log({ actionType, tableID });
-
   if (actionType === null || actionType == "")
     return res.status(400).json({ status: "Error", Error: "Error occured" });
 
@@ -1479,6 +1477,110 @@ export const propertyActionPost = TryCatch(async (req, res) => {
               }
             );
           }
+        }
+      }
+    );
+  }
+});
+
+export const fetchSortedProperties = TryCatch(async (req, res) => {
+  const sortBy = req.params.id ? req.params.id : "";
+
+  if (sortBy == "" || !sortBy)
+    return res.status(400).json({ status: "Error", Error: "Error occured" });
+
+  if (sortBy == "datePosted") {
+    conn.query(
+      `SELECT * FROM property WHERE status='approved' ORDER BY createdOn`,
+      (err, Properties, fields) => {
+        if (err) {
+          console.log(err);
+          return res
+            .status(400)
+            .json({ status: "Error", Error: "Error occured" });
+        }
+
+        if (Properties) {
+          if (Properties.length <= 0)
+            return res.status(200).json({ status: "Success", Properties });
+
+          Properties.forEach((property, index) => {
+            conn.query(
+              `SELECT image FROM propertyimages WHERE propertyID = '${property.propertyID}'`,
+              (err, results, fields) => {
+                property.image = results[0].image;
+
+                if (index == Properties.length - 1)
+                  return res
+                    .status(200)
+                    .json({ status: "Success", Properties });
+              }
+            );
+          });
+        }
+      }
+    );
+  }
+  if (sortBy == "type") {
+    conn.query(
+      `SELECT * FROM property WHERE status='approved' ORDER BY propertyType`,
+      (err, Properties, fields) => {
+        if (err) {
+          console.log(err);
+          return res
+            .status(400)
+            .json({ status: "Error", Error: "Error occured" });
+        }
+
+        if (Properties) {
+          if (Properties.length <= 0)
+            return res.status(200).json({ status: "Success", Properties });
+
+          Properties.forEach((property, index) => {
+            conn.query(
+              `SELECT image FROM propertyimages WHERE propertyID = '${property.propertyID}'`,
+              (err, results, fields) => {
+                property.image = results[0].image;
+
+                if (index == Properties.length - 1)
+                  return res
+                    .status(200)
+                    .json({ status: "Success", Properties });
+              }
+            );
+          });
+        }
+      }
+    );
+  }
+  if (sortBy == "price") {
+    conn.query(
+      `SELECT * FROM property WHERE status='approved' ORDER BY price`,
+      (err, Properties, fields) => {
+        if (err) {
+          console.log(err);
+          return res
+            .status(400)
+            .json({ status: "Error", Error: "Error occured" });
+        }
+
+        if (Properties) {
+          if (Properties.length <= 0)
+            return res.status(200).json({ status: "Success", Properties });
+
+          Properties.forEach((property, index) => {
+            conn.query(
+              `SELECT image FROM propertyimages WHERE propertyID = '${property.propertyID}'`,
+              (err, results, fields) => {
+                property.image = results[0].image;
+
+                if (index == Properties.length - 1)
+                  return res
+                    .status(200)
+                    .json({ status: "Success", Properties });
+              }
+            );
+          });
         }
       }
     );

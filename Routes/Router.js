@@ -13,6 +13,7 @@ import {
   fetchLeasedProperties,
   fetchPropertiesGet,
   fetchPropertyPost,
+  fetchSortedProperties,
   propertyActionPost,
   registerPost,
   signinPost,
@@ -61,5 +62,6 @@ router
   .put(updateLeasedPropertStatus);
 router.get("/properties/leased/:id", fetchLeasedProperties);
 router.post("/property/action", propertyActionPost);
+router.get("/property/sort/:id", fetchSortedProperties);
 
 export default router;
