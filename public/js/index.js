@@ -231,6 +231,8 @@ async function fetchAdminProperties() {
 
     const data = await res.json();
 
+    console.log({ data });
+
     let PendingProperties = [];
     let PendingPropertiesForDelete = [];
     let PendingPropertiesForUpdate = [];
@@ -331,16 +333,8 @@ async function fetchAdminProperties() {
                       <img src="upload/${property?.image}" class="card-img-top" alt="" />
                       <div class="card-body">
                         <h5 class="card-title text-decoration-none primary-color">
-                        ${property?.bedrooms} Bedroom ${property?.propertyType}
+                        ${property?.propertyName}
                         </h5>
-                        <div class="d-flex">
-                          <p class="card-text text-decoration-none dark-color">
-                          ${property?.propertyLocation}
-                          </p>
-                          <p class=" mx-3 text-decoration-none primary-color">
-                          UGX ${property?.price}
-                          </p>
-                        </div>
                       </div>
                       <div class="card-footer">
                         <div class="py-2">

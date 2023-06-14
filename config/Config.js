@@ -1,7 +1,7 @@
 export default {
   host: "localhost",
-  user: "root",
-  database: "my-properties",
+  user: "phpmyadmin",
+  database: "my_properties",
   port: "3306",
-  password: "",
+  password: "sse2019",
 };

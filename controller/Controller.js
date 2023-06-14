@@ -709,13 +709,17 @@ export const addPropertyForUpdatePost = TryCatch(async (req, res) => {
     propertyID,
   } = req.body;
 
+  console.log(req.body);
+
+  console.log("called hereeee");
+
   if (propertyID == "" || propertyID == null)
     return res.status(400).json({ status: "Error", Error: "Error occured" });
 
   if (userId == "" || userId == null)
     return res.status(400).json({ status: "Error", Error: "Error occured" });
 
-  // check if the property has already been flagged to deletion
+  // check if the property has already been flagged to update
 
   conn.query(
     `SELECT * FROM propertyforupdate WHERE propertyID='${propertyID}'`,
@@ -729,6 +733,7 @@ export const addPropertyForUpdatePost = TryCatch(async (req, res) => {
 
       if (results) {
         if (results.length > 0) {
+          console.log("greater");
           conn.query(
             `UPDATE propertyforupdate SET propertyName='${propertyName}', propertyType='${propertyType}', propertyLocation='${propertyLocation}', propertyDescription='${propertyDescription}', bedrooms='${bedrooms}', bathrooms='${bathrooms}', map='${map}', price='${cost}', userId='${userId}' WHERE propertyID='${propertyID}'`,
             (err, results, fields) => {
@@ -787,8 +792,9 @@ export const addPropertyForUpdatePost = TryCatch(async (req, res) => {
             }
           );
         } else {
+          console.log("not");
           conn.query(
-            `INSERT INTO propertyforupdate (propertyID, propertyName, propertyType, propertyLocation, propertyDescription, bedrooms, bathrooms, map, price, userId) VALUES ('${propertyID}'',${propertyName}', '${propertyType}', '${propertyLocation}', '${propertyDescription}', '${bedrooms}', '${bathrooms}', '${map}', '${cost}', '${userId}')`,
+            `INSERT INTO propertyforupdate (propertyID, propertyName, propertyType, propertyLocation, propertyDescription, bedrooms, bathrooms, map, price, userId) VALUES ('${propertyID}', '${propertyName}', '${propertyType}', '${propertyLocation}', '${propertyDescription}', '${bedrooms}', '${bathrooms}', '${map}', '${cost}', '${userId}')`,
             (err, results, fields) => {
               if (err) {
                 console.log(err);
@@ -1184,8 +1190,6 @@ export const updateLeasedPropertStatus = TryCatch(async (req, res) => {
 export const fetchAdminPropertiesPost = TryCatch(async (req, res) => {
   const ID = req.params.id ? req.params.id : null;
 
-  console.log(ID);
-
   if (ID === null)
     return res.status(400).json({ status: "Error", Error: "Error occured" });
 
@@ -1220,7 +1224,7 @@ export const fetchAdminPropertiesPost = TryCatch(async (req, res) => {
           }
         }
         conn.query(
-          "SELECT * FROM propertyforupdate WHERE status='pending'",
+          "SELECT propertyforupdate.propertyForUpdateId, propertyforupdate.propertyID, property.propertyName FROM propertyforupdate INNER JOIN property ON propertyforupdate.propertyID = property.propertyID WHERE propertyforupdate.status='pending'",
           (err, PendingPropertyForUpdate, fields) => {
             if (err) {
               console.log(err);
@@ -1228,6 +1232,8 @@ export const fetchAdminPropertiesPost = TryCatch(async (req, res) => {
                 .status(400)
                 .json({ status: "Error", Error: "Error occured" });
             }
+
+            console.log(PendingPropertyForUpdate);
 
             if (PendingPropertyForUpdate) {
               if (PendingPropertyForUpdate.length > 0) {
