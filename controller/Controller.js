@@ -251,7 +251,9 @@ export const fetchPropertiesGet = TryCatch(async (req, res) => {
 
         conn.query(
           `SELECT * FROM property WHERE userId = ${ID} AND status='pending'`,
-          (err, PendingProperties, fields) => {
+          (err, results, fields) => {
+            let PendingProperties = results;
+
             if (err) {
               console.log(err);
               return res
@@ -260,30 +262,106 @@ export const fetchPropertiesGet = TryCatch(async (req, res) => {
             }
 
             if (PendingProperties) {
-              if (PendingProperties.length <= 0)
-                return res.status(200).json({
-                  status: "Success",
-                  ApprovedProperties,
-                  PendingProperties,
-                });
+              for (const property of PendingProperties) {
+                property.image = results[0].image;
+              }
 
-              console.log(PendingProperties);
-
-              PendingProperties.forEach((property, index) => {
-                conn.query(
-                  `SELECT image FROM propertyimages WHERE propertyID = '${property.propertyID}'`,
-                  (err, results, fields) => {
-                    property.image = results[0].image;
-
-                    if (index == PendingProperties.length - 1)
-                      return res.status(200).json({
-                        status: "Success",
-                        ApprovedProperties,
-                        PendingProperties,
-                      });
+              // fetch most liked and disliked property
+              conn.query(
+                `SELECT * FROM property INNER JOIN likedproperty ON property.propertyID = likedproperty.propertyID WHERE property.userId='${ID}'`,
+                (err, LikedProperties, fields) => {
+                  const LikedProperty = [];
+                  if (err) {
+                    console.log(err);
+                    return res
+                      .status(400)
+                      .json({ status: "Error", Error: "Error occured" });
                   }
-                );
-              });
+
+                  if (LikedProperties) {
+                    if (LikedProperties.length > 0) {
+                      LikedProperty.push(
+                        LikedProperties.reduce((prev, curr) => {
+                          return prev.likes > curr.likes ? prev : curr;
+                        })
+                      );
+                      conn.query(
+                        `SELECT image FROM propertyimages WHERE propertyID=${LikedProperty[0].propertyID}`,
+                        (err, images, fields) => {
+                          if (err) {
+                            console.log(err);
+                            return res.status(400).json({
+                              status: "Error",
+                              Error: "Error occured",
+                            });
+                          }
+
+                          if (images) {
+                            LikedProperty[0].image = images[0].image;
+
+                            // fetch disliked property
+                            conn.query(
+                              `SELECT * FROM property INNER JOIN dislikedproperty ON property.propertyID = dislikedproperty.propertyID WHERE property.userId='${ID}'`,
+                              (err, DislikedProperties, fields) => {
+                                const DislikedProperty = [];
+                                if (err) {
+                                  console.log(err);
+                                  return res.status(400).json({
+                                    status: "Error",
+                                    Error: "Error occured",
+                                  });
+                                }
+
+                                if (DislikedProperties) {
+                                  if (DislikedProperties.length > 0) {
+                                    DislikedProperty.push(
+                                      DislikedProperties.reduce(
+                                        (prev, curr) => {
+                                          return prev.likes > curr.likes
+                                            ? prev
+                                            : curr;
+                                        }
+                                      )
+                                    );
+
+                                    conn.query(
+                                      `SELECT image FROM propertyimages WHERE propertyID=${DislikedProperty[0].propertyID}`,
+                                      (err, images, fields) => {
+                                        if (err) {
+                                          console.log(err);
+                                          return res.status(400).json({
+                                            status: "Error",
+                                            Error: "Error occured",
+                                          });
+                                        }
+
+                                        if (images) {
+                                          DislikedProperty[0].image =
+                                            images[0].image;
+                                        }
+
+                                        return res
+                                          .status(200)
+                                          .json({
+                                            status: "Success",
+                                            ApprovedProperties,
+                                            PendingProperties,
+                                            LikedProperty,
+                                            DislikedProperty,
+                                          });
+                                      }
+                                    );
+                                  }
+                                }
+                              }
+                            );
+                          }
+                        }
+                      );
+                    }
+                  }
+                }
+              );
             }
           }
         );
@@ -1591,4 +1669,27 @@ export const fetchSortedProperties = TryCatch(async (req, res) => {
       }
     );
   }
+});
+
+export const fetchLikedAndDislikedGet = TryCatch(async (req, res) => {
+  const propertyID = req.params.id ? req.params.id : "";
+
+  if (propertyID == "" || !propertyID)
+    return res.status(400).json({ status: "Error", Error: "Error occured" });
+
+  conn.query(
+    `SELECT MAX(dislikes) FROM dislikedproperty WHERE propertyID='${propertyID}'`,
+    (err, DislikedProperties, fields) => {
+      if (err) {
+        console.log(err);
+        return res
+          .status(400)
+          .json({ status: "Error", Error: "Error occured" });
+      }
+
+      if (DislikedProperties) {
+        console.log(DislikedProperties);
+      }
+    }
+  );
 });

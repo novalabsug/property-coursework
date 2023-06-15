@@ -415,12 +415,20 @@ async function fetchLandlordProperties() {
 
     let PendingProperties = [];
     let ApprovedProperties = [];
+    let MostLikedProperty = [];
+    let MostDislikedProperty = [];
 
     if (data.status == "Success") {
-      ApprovedProperties = data?.ApprovedProperties;
-      PendingProperties = data?.PendingProperties;
-
-      console.log({ ApprovedProperties, PendingProperties });
+      ApprovedProperties = data?.ApprovedProperties
+        ? data?.ApprovedProperties
+        : [];
+      PendingProperties = data?.PendingProperties
+        ? data?.PendingProperties
+        : [];
+      MostDislikedProperty = data?.DislikedProperty
+        ? data?.DislikedProperty
+        : [];
+      MostLikedProperty = data?.LikedProperty ? data?.LikedProperty : [];
 
       const approvedDiv = document.createElement("div");
       approvedDiv.className = "py-3";
@@ -503,6 +511,88 @@ async function fetchLandlordProperties() {
         `;
 
       $("#properties-container").append(pendingDiv);
+
+      const mostLikedDiv = document.createElement("div");
+      mostLikedDiv.className = "py-3";
+      mostLikedDiv.innerHTML = `
+          <h3 class="fs-4">Most Liked Property</h3>
+          <div class="row row-cols-1 row-cols-md-3 g-4">
+          ${
+            MostLikedProperty?.length > 0
+              ? MostLikedProperty.map(
+                  (property, index) =>
+                    `
+                <div class="col">
+                  <a href="property.html?id=${property?.propertyID}" class="card text-decoration-none">
+                    <img src="upload/${property?.image}" class="card-img-top" alt="" />
+                    <div class="card-body">
+                      <h5 class="card-title text-decoration-none primary-color">
+                      ${property?.bedrooms} Bedroom ${property?.propertyType}
+                      </h5>
+                      <div class="d-flex">
+                        <p class="card-text text-decoration-none dark-color">
+                        ${property?.propertyLocation}
+                        </p>
+                        <p class=" mx-3 text-decoration-none primary-color">
+                        UGX ${property?.price}
+                        </p>
+                      </div>
+                    </div>
+                  </a>
+                </div>
+              `
+                )
+              : `
+            <div class="py-2">
+              <p class="text-center fs-3">No most liked property</p>
+            </div>
+          `
+          }
+          </div>
+        `;
+
+      $("#properties-container").append(mostLikedDiv);
+
+      const mostDislikedDiv = document.createElement("div");
+      mostDislikedDiv.className = "py-3";
+      mostDislikedDiv.innerHTML = `
+          <h3 class="fs-4">Most Disliked Property</h3>
+          <div class="row row-cols-1 row-cols-md-3 g-4">
+          ${
+            MostDislikedProperty?.length > 0
+              ? MostDislikedProperty.map(
+                  (property, index) =>
+                    `
+                <div class="col">
+                  <a href="property.html?id=${property?.propertyID}" class="card text-decoration-none">
+                    <img src="upload/${property?.image}" class="card-img-top" alt="" />
+                    <div class="card-body">
+                      <h5 class="card-title text-decoration-none primary-color">
+                      ${property?.bedrooms} Bedroom ${property?.propertyType}
+                      </h5>
+                      <div class="d-flex">
+                        <p class="card-text text-decoration-none dark-color">
+                        ${property?.propertyLocation}
+                        </p>
+                        <p class=" mx-3 text-decoration-none primary-color">
+                        UGX ${property?.price}
+                        </p>
+                      </div>
+                    </div>
+                  </a>
+                </div>
+              `
+                )
+              : `
+            <div class="py-2">
+              <p class="text-center fs-3">No most disliked property </p>
+            </div>
+          `
+          }
+          </div>
+        `;
+
+      $("#properties-container").append(mostDislikedDiv);
     }
   } catch (error) {
     console.log(error);
