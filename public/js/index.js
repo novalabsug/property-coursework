@@ -236,13 +236,63 @@ async function fetchAdminProperties() {
     let PendingProperties = [];
     let PendingPropertiesForDelete = [];
     let PendingPropertiesForUpdate = [];
+    let ApprovedProperties = 0;
+    let LeasedProperties = 0;
+    let Landlords = 0;
+    let Tenants = 0;
 
     if (data.status == "Success") {
       PendingProperties = data?.PendingProperties;
       PendingPropertiesForDelete = data?.PendingPropertyForDelete;
       PendingPropertiesForUpdate = data?.PendingPropertyForUpdate;
+      ApprovedProperties = data?.ApprovedProperties
+        ? data?.ApprovedProperties
+        : 0;
+      LeasedProperties = data?.LeasedProperties ? data?.LeasedProperties : 0;
+      Landlords = data?.Landlords ? data?.Landlords : 0;
+      Tenants = data?.Tenants ? data?.Tenants : 0;
 
       $("#properties-container").html(`
+        <div class="py-3">
+          <div class="row row-cols-1 row-cols-md-4 g-3">
+            <div class="col">
+              <div class="card pt-4">
+                <h3 class="fs-6 text-center">Registered Properties</h3>
+                <p class="fs-2 text-center">${
+                  ApprovedProperties > 0 && ApprovedProperties < 10
+                    ? `0${ApprovedProperties}`
+                    : ApprovedProperties
+                }</p>
+              </div>
+            </div>
+            <div class="col">
+              <div class="card pt-4">
+                <h3 class="fs-6 text-center">Leased Properties</h3>
+                <p class="fs-2 text-center">${
+                  LeasedProperties > 0 && LeasedProperties < 10
+                    ? `0${LeasedProperties}`
+                    : LeasedProperties
+                }</p>
+              </div>
+            </div>
+            <div class="col">
+              <div class="card pt-4">
+                <h3 class="fs-6 text-center">Landlords</h3>
+                <p class="fs-2 text-center">${
+                  Landlords > 0 && Landlords < 10 ? `0${Landlords}` : Landlords
+                }</p>
+              </div>
+            </div>
+            <div class="col">
+              <div class="card pt-4">
+                <h3 class="fs-6 text-center">Tenants</h3>
+                <p class="fs-2 text-center">${
+                  Tenants > 0 && Tenants < 10 ? `0${Tenants}` : Tenants
+                }</p>
+              </div>
+            </div>
+          </div>
+        </div>
         <div class="py-3">
           <h3 class="fs-4">New Properties for approval</h3>
           ${

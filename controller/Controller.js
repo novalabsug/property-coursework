@@ -340,15 +340,13 @@ export const fetchPropertiesGet = TryCatch(async (req, res) => {
                                             images[0].image;
                                         }
 
-                                        return res
-                                          .status(200)
-                                          .json({
-                                            status: "Success",
-                                            ApprovedProperties,
-                                            PendingProperties,
-                                            LikedProperty,
-                                            DislikedProperty,
-                                          });
+                                        return res.status(200).json({
+                                          status: "Success",
+                                          ApprovedProperties,
+                                          PendingProperties,
+                                          LikedProperty,
+                                          DislikedProperty,
+                                        });
                                       }
                                     );
                                   }
@@ -1356,32 +1354,94 @@ export const fetchAdminPropertiesPost = TryCatch(async (req, res) => {
                             if (pendingPropertyForDeleteImages) {
                               property.image =
                                 pendingPropertyForDeleteImages[0].image;
-
-                              if (
-                                index ==
-                                PendingPropertyForDelete.length - 1
-                              ) {
-                                res.status(200).json({
-                                  status: "Success",
-                                  PendingProperties,
-                                  PendingPropertyForDelete,
-                                  PendingPropertyForUpdate,
-                                });
-                                return;
-                              }
                             }
                           }
                         );
                       });
-                    } else {
-                      res.status(200).json({
-                        status: "Success",
-                        PendingProperties,
-                        PendingPropertyForDelete,
-                        PendingPropertyForUpdate,
-                      });
-                      return;
                     }
+                    // fetch all approved properties
+                    conn.query(
+                      "SELECT * FROM property WHERE status='approved'",
+                      (err, ApprovedPropertiesArr, fields) => {
+                        if (err) {
+                          console.log(err);
+                          return res
+                            .status(400)
+                            .json({ status: "Error", Error: "Error occured" });
+                        }
+
+                        if (ApprovedPropertiesArr) {
+                          // fetch all leased properties
+                          conn.query(
+                            "SELECT * FROM leasedproperty WHERE status='active'",
+                            (err, LeasedPropertiesArr, fields) => {
+                              if (err) {
+                                console.log(err);
+                                return res.status(400).json({
+                                  status: "Error",
+                                  Error: "Error occured",
+                                });
+                              }
+
+                              if (LeasedPropertiesArr) {
+                                // fetch all landlords
+                                conn.query(
+                                  "SELECT * FROM users WHERE accountType='landlord'",
+                                  (err, LandlordArr, fields) => {
+                                    if (err) {
+                                      console.log(err);
+                                      return res.status(400).json({
+                                        status: "Error",
+                                        Error: "Error occured",
+                                      });
+                                    }
+
+                                    if (LandlordArr) {
+                                      conn.query(
+                                        "SELECT * FROM users WHERE accountType='tenant'",
+                                        (err, TenantArr, fields) => {
+                                          if (err) {
+                                            console.log(err);
+                                            return res.status(400).json({
+                                              status: "Error",
+                                              Error: "Error occured",
+                                            });
+                                          }
+
+                                          if (TenantArr) {
+                                            res.status(200).json({
+                                              status: "Success",
+                                              PendingProperties,
+                                              PendingPropertyForDelete,
+                                              PendingPropertyForUpdate,
+                                              ApprovedProperties:
+                                                ApprovedPropertiesArr.length
+                                                  ? ApprovedPropertiesArr.length
+                                                  : 0,
+                                              LeasedProperties:
+                                                LeasedPropertiesArr.length
+                                                  ? LeasedPropertiesArr.length
+                                                  : 0,
+                                              Landlords: LandlordArr.length
+                                                ? LandlordArr.length
+                                                : 0,
+                                              Tenants: TenantArr.length
+                                                ? TenantArr.length
+                                                : 0,
+                                            });
+                                            return;
+                                          }
+                                        }
+                                      );
+                                    }
+                                  }
+                                );
+                              }
+                            }
+                          );
+                        }
+                      }
+                    );
                   }
                 }
               );
