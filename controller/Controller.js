@@ -221,6 +221,8 @@ export const fetchAllPropertiesGet = TryCatch(async (req, res) => {
 export const fetchPropertiesGet = TryCatch(async (req, res) => {
   const ID = req.params.id ? req.params.id : null;
 
+  console.log("we are here");
+
   if (ID === null)
     return res.status(400).json({ status: "Error", Error: "Error occured" });
 
@@ -228,6 +230,8 @@ export const fetchPropertiesGet = TryCatch(async (req, res) => {
     `SELECT * FROM property WHERE userId = ${ID} AND status='approved'`,
     (err, results, fields) => {
       let ApprovedProperties = results;
+
+      console.log({ ApprovedProperties });
 
       if (err) {
         console.log(err);
@@ -254,6 +258,8 @@ export const fetchPropertiesGet = TryCatch(async (req, res) => {
           (err, results, fields) => {
             let PendingProperties = results;
 
+            console.log({ PendingProperties });
+
             if (err) {
               console.log(err);
               return res
@@ -279,6 +285,7 @@ export const fetchPropertiesGet = TryCatch(async (req, res) => {
                   }
 
                   if (LikedProperties) {
+                    console.log({ LikedProperties });
                     if (LikedProperties.length > 0) {
                       LikedProperty.push(
                         LikedProperties.reduce((prev, curr) => {
@@ -298,12 +305,37 @@ export const fetchPropertiesGet = TryCatch(async (req, res) => {
 
                           if (images) {
                             LikedProperty[0].image = images[0].image;
+                          }
+                        }
+                      );
+                    }
+                    // fetch disliked property
+                    conn.query(
+                      `SELECT * FROM property INNER JOIN dislikedproperty ON property.propertyID = dislikedproperty.propertyID WHERE property.userId='${ID}'`,
+                      (err, DislikedProperties, fields) => {
+                        const DislikedProperty = [];
+                        if (err) {
+                          console.log(err);
+                          return res.status(400).json({
+                            status: "Error",
+                            Error: "Error occured",
+                          });
+                        }
 
-                            // fetch disliked property
+                        console.log(DislikedProperties);
+
+                        if (DislikedProperties) {
+                          if (DislikedProperties.length > 0) {
+                            console.log(DislikedProperties);
+                            DislikedProperty.push(
+                              DislikedProperties.reduce((prev, curr) => {
+                                return prev.likes > curr.likes ? prev : curr;
+                              })
+                            );
+
                             conn.query(
-                              `SELECT * FROM property INNER JOIN dislikedproperty ON property.propertyID = dislikedproperty.propertyID WHERE property.userId='${ID}'`,
-                              (err, DislikedProperties, fields) => {
-                                const DislikedProperty = [];
+                              `SELECT image FROM propertyimages WHERE propertyID=${DislikedProperty[0].propertyID}`,
+                              (err, images, fields) => {
                                 if (err) {
                                   console.log(err);
                                   return res.status(400).json({
@@ -312,51 +344,34 @@ export const fetchPropertiesGet = TryCatch(async (req, res) => {
                                   });
                                 }
 
-                                if (DislikedProperties) {
-                                  if (DislikedProperties.length > 0) {
-                                    DislikedProperty.push(
-                                      DislikedProperties.reduce(
-                                        (prev, curr) => {
-                                          return prev.likes > curr.likes
-                                            ? prev
-                                            : curr;
-                                        }
-                                      )
-                                    );
-
-                                    conn.query(
-                                      `SELECT image FROM propertyimages WHERE propertyID=${DislikedProperty[0].propertyID}`,
-                                      (err, images, fields) => {
-                                        if (err) {
-                                          console.log(err);
-                                          return res.status(400).json({
-                                            status: "Error",
-                                            Error: "Error occured",
-                                          });
-                                        }
-
-                                        if (images) {
-                                          DislikedProperty[0].image =
-                                            images[0].image;
-                                        }
-
-                                        return res.status(200).json({
-                                          status: "Success",
-                                          ApprovedProperties,
-                                          PendingProperties,
-                                          LikedProperty,
-                                          DislikedProperty,
-                                        });
-                                      }
-                                    );
-                                  }
+                                if (images) {
+                                  DislikedProperty[0].image = images[0].image;
                                 }
+
+                                res.status(200).json({
+                                  status: "Success",
+                                  ApprovedProperties,
+                                  PendingProperties,
+                                  LikedProperty,
+                                  DislikedProperty,
+                                });
+                                return;
                               }
                             );
+                          } else {
+                            console.log("also herreeee");
+
+                            return res.status(200).json({
+                              status: "Success",
+                              ApprovedProperties,
+                              PendingProperties,
+                              LikedProperty,
+                              DislikedProperty,
+                            });
                           }
                         }
-                      );
-                    }
+                      }
+                    );
                   }
                 }
               );
@@ -400,7 +415,7 @@ export const fetchPropertyPost = TryCatch(async (req, res) => {
 
                 if (images) {
                   conn.query(
-                    `SELECT likedProperty.likes, users.username FROM likedProperty INNER JOIN users ON likedProperty.userId = users.userId WHERE likedProperty.propertyID = '${Property[0].propertyID}'`,
+                    `SELECT likedProperty.likes, users.username FROM likedproperty INNER JOIN users ON likedProperty.userId = users.userId WHERE likedProperty.propertyID = '${Property[0].propertyID}'`,
                     (err, Likes, fields) => {
                       if (err) {
                         console.log(err);
@@ -411,7 +426,7 @@ export const fetchPropertyPost = TryCatch(async (req, res) => {
 
                       if (Likes) {
                         conn.query(
-                          `SELECT dislikedProperty.dislikes, users.username FROM dislikedProperty INNER JOIN users ON dislikedProperty.userId = users.userId WHERE dislikedProperty.propertyID = '${Property[0].propertyID}'`,
+                          `SELECT dislikedProperty.dislikes, users.username FROM dislikedproperty INNER JOIN users ON dislikedProperty.userId = users.userId WHERE dislikedProperty.propertyID = '${Property[0].propertyID}'`,
                           (err, Dislikes, fields) => {
                             if (err) {
                               console.log(err);
@@ -489,7 +504,7 @@ export const fetchPropertyPost = TryCatch(async (req, res) => {
 
                   if (images) {
                     conn.query(
-                      `SELECT likedProperty.likes, users.username FROM likedProperty INNER JOIN users ON likedProperty.userId = users.userId WHERE likedProperty.propertyID = '${Property[0].propertyID}'`,
+                      `SELECT likedProperty.likes, users.username FROM likedproperty INNER JOIN users ON likedProperty.userId = users.userId WHERE likedProperty.propertyID = '${Property[0].propertyID}'`,
                       (err, Likes, fields) => {
                         if (err) {
                           console.log(err);
@@ -500,7 +515,7 @@ export const fetchPropertyPost = TryCatch(async (req, res) => {
 
                         if (Likes) {
                           conn.query(
-                            `SELECT dislikedProperty.dislikes, users.username FROM dislikedProperty INNER JOIN users ON dislikedProperty.userId = users.userId WHERE dislikedProperty.propertyID = '${Property[0].propertyID}'`,
+                            `SELECT dislikedProperty.dislikes, users.username FROM dislikedproperty INNER JOIN users ON dislikedProperty.userId = users.userId WHERE dislikedProperty.propertyID = '${Property[0].propertyID}'`,
                             (err, Dislikes, fields) => {
                               if (err) {
                                 console.log(err);
@@ -632,7 +647,7 @@ export const fetchPropertyPost = TryCatch(async (req, res) => {
 
                   if (images) {
                     conn.query(
-                      `SELECT likedProperty.likes, users.username FROM likedProperty INNER JOIN users ON likedProperty.userId = users.userId WHERE likedProperty.propertyID = '${Property[0].propertyID}'`,
+                      `SELECT likedProperty.likes, users.username FROM likedproperty INNER JOIN users ON likedProperty.userId = users.userId WHERE likedProperty.propertyID = '${Property[0].propertyID}'`,
                       (err, Likes, fields) => {
                         if (err) {
                           console.log(err);
@@ -643,7 +658,7 @@ export const fetchPropertyPost = TryCatch(async (req, res) => {
 
                         if (Likes) {
                           conn.query(
-                            `SELECT dislikedProperty.dislikes, users.username FROM dislikedProperty INNER JOIN users ON dislikedProperty.userId = users.userId WHERE dislikedProperty.propertyID = '${Property[0].propertyID}'`,
+                            `SELECT dislikedProperty.dislikes, users.username FROM dislikedproperty INNER JOIN users ON dislikedProperty.userId = users.userId WHERE dislikedProperty.propertyID = '${Property[0].propertyID}'`,
                             (err, Dislikes, fields) => {
                               if (err) {
                                 console.log(err);

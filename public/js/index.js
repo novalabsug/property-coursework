@@ -657,6 +657,8 @@ async function fetchAllProperties() {
 
     const data = await res.json();
 
+    console.log({ data });
+
     let Properties = [];
 
     if (data.status == "Success") {
